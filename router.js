@@ -106,9 +106,10 @@ router.post("/tasks/get", async (req, res) => {
 
 router.post("/tasks/getToday", async (req, res) => {
   let userName = req.body.userName;
+  let day = req.body.day;
   let userID = await getUserID(userName);
   console.log("Get Tasks Today:", userName);
-  let result = await getTasksToday(userID);
+  let result = await getTasksToday(userID, day);
   res.json(result);
 });
 

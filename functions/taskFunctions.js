@@ -115,9 +115,10 @@ const getListTasks = async (userID, listID) => {
   }
 };
 
-const getTasksToday = async (userID, listID) => {
+const getTasksToday = async (userID, day) => {
   try {
-    const data = await Task.find({ userID: userID, dueDate: getDate() });
+    const data = await Task.find({ userID: userID, dueDate: day });
+    console.log(data);
     return data;
   } catch (error) {
     return "Error: Get Tasks";
