@@ -16,6 +16,8 @@ const {
   removeTask,
   updateTask,
   getTasksToday,
+  getTasksWeek,
+  fixdate,
 } = require("./functions/taskFunctions");
 
 router.get("/", (req, res) => {
@@ -85,7 +87,7 @@ router.post("/lists/update", async (req, res) => {
   }
 });
 
-//
+// Delete List
 router.post("/lists/remove", async (req, res) => {
   let userName = req.body.userName;
   let listID = req.body.listID;
@@ -110,6 +112,16 @@ router.post("/tasks/getToday", async (req, res) => {
   let userID = await getUserID(userName);
   console.log("Get Tasks Today:", userName);
   let result = await getTasksToday(userID, day);
+  res.json(result);
+});
+
+router.post("/tasks/getWeek", async (req, res) => {
+  let userName = req.body.userName;
+  let day = req.body.day;
+  let offset = req.body.offset;
+  let userID = await getUserID(userName);
+  console.log("Get Tasks Week:", userName);
+  let result = await getTasksWeek(userID, day, offset);
   res.json(result);
 });
 

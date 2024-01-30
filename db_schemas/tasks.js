@@ -9,10 +9,12 @@ const taskSchema = new mongoose.Schema({
   details: { type: String, required: false },
   priority: { type: String, required: false },
   tags: [{ type: String, required: false }],
-  createDate: { type: String, required: false },
-  dueDate: { type: String, required: false },
+  createDate: { type: Date, required: false },
+  dueDate: { type: Date, required: false },
   dueTime: { type: String, required: false },
   completed: { type: Boolean, required: false },
+  trash: { type: Boolean, required: false },
+  trashDate: { type: Date, required: false },
 });
 
 const Task = mongoose.model("Task", taskSchema);

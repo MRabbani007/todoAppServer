@@ -10,6 +10,7 @@ const getUserLists = async (userID) => {
     return "Error: Get Lists";
   }
 };
+
 // Create New Product
 const createList = async (userID, list) => {
   try {
@@ -44,13 +45,27 @@ const updateList = async (userID, listID, updateData) => {
         ).exec();
         break;
       }
-      case "due_date": {
-        TaskList.updateOne(
-          { listID: updateData.listID, id: updateData.taskID },
-          { $set: { dueDate: updateData.newValue } }
+      case "trash": {
+        const response = await TaskList.updateOne(
+          { id: listID },
+          { $set: { trash: true } }
         ).exec();
         break;
       }
+      case "un_trash": {
+        const response = await TaskList.updateOne(
+          { id: listID },
+          { $set: { trash: false } }
+        ).exec();
+        break;
+      }
+      // case "due_date": {
+      //   TaskList.updateOne(
+      //     { listID: updateData.listID, id: updateData.taskID },
+      //     { $set: { dueDate: new Date(updateData.newValue) } }
+      //   ).exec();
+      //   break;
+      // }
       default: {
       }
     }
@@ -83,7 +98,7 @@ const addTask = async (userID, listID, taskTitle) => {
       priority: "normal",
       tags: [],
       createDate: new Date(),
-      dueDate: "",
+      dueDate: new Date(),
       dueTime: "",
       completed: false,
     });
@@ -111,18 +126,41 @@ const getListTasks = async (userID, listID) => {
     const data = await Task.find({ listID: listID });
     return data;
   } catch (error) {
-    return "Error: Get Tasks";
+    return "Error: Get Tasks List";
   }
 };
 
 const getTasksToday = async (userID, day) => {
   try {
-    const data = await Task.find({ userID: userID, dueDate: day });
-    console.log(data);
+    const data = await Task.find({
+      userID: userID,
+      completed: false,
+      dueDate: { $gte: new Date(day), $lte: new Date(day) },
+    });
     return data;
   } catch (error) {
-    return "Error: Get Tasks";
+    return "Error: Get Tasks Day";
   }
+};
+
+const getTasksWeek = async (userID, day, offset) => {
+  try {
+    const data = await Task.find({
+      userID: userID,
+      completed: false,
+      dueDate: { $gte: new Date(day), $lte: new Date(offset) },
+    });
+    return data;
+  } catch (error) {
+    return "Error: Get Tasks Week";
+  }
+};
+
+const fixdate = async () => {
+  try {
+    Task.updateMany({}, { $set: { dueDate: new Date("1900-01-01") } }).exec();
+    console.log("done");
+  } catch (error) {}
 };
 
 const updateTask = async (userID, updateData) => {
@@ -145,7 +183,7 @@ const updateTask = async (userID, updateData) => {
       case "due_date": {
         Task.updateOne(
           { listID: updateData.listID, id: updateData.taskID },
-          { $set: { dueDate: updateData.newValue } }
+          { $set: { dueDate: new Date(updateData.newValue) } }
         ).exec();
         break;
       }
@@ -179,6 +217,7 @@ const updateTask = async (userID, updateData) => {
 };
 
 module.exports = {
+  fixdate,
   createList,
   updateList,
   removeList,
@@ -187,5 +226,6 @@ module.exports = {
   removeTask,
   getListTasks,
   getTasksToday,
+  getTasksWeek,
   updateTask,
 };
