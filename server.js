@@ -27,7 +27,7 @@ app.use(express.json());
 app.use("/user", userRouter);
 app.use("/lists", listRouter);
 app.use("/tasks", taskRouter);
-app.use("/", router);
+// app.use("/", router);
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
