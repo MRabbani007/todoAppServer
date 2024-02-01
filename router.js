@@ -20,7 +20,7 @@ const {
 } = require("./functions/taskFunctions");
 
 router.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.json("Hello World!");
 });
 
 router.post("/", (req, res) => {
@@ -29,7 +29,7 @@ router.post("/", (req, res) => {
 
 router.post("/:page", (req, res, next) => {
   console.error(err.stack);
-  res.status(500).send("Server Running");
+  res.status(500).json("Server Running");
 });
 
 module.exports = router;
