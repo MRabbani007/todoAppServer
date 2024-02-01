@@ -17,7 +17,6 @@ const {
   updateTask,
   getTasksToday,
   getTasksWeek,
-  fixdate,
 } = require("./functions/taskFunctions");
 
 router.get("/", (req, res) => {
@@ -97,7 +96,7 @@ router.post("/lists/remove", async (req, res) => {
   res.json(response);
 });
 
-router.post("/tasks/get", async (req, res) => {
+router.post("/tasks/getList", async (req, res) => {
   let userName = req.body.userName;
   let listID = req.body.listID;
   let userID = await getUserID(userName);
