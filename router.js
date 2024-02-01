@@ -96,6 +96,10 @@ router.post("/lists/remove", async (req, res) => {
   res.json(response);
 });
 
+router.post("/tasks/", async (req, res) => {
+  res.json("task functions");
+});
+
 router.post("/tasks/getList", async (req, res) => {
   let userName = req.body.userName;
   let listID = req.body.listID;
@@ -103,10 +107,6 @@ router.post("/tasks/getList", async (req, res) => {
   console.log("Get Tasks:", listID);
   let result = await getListTasks(userID, listID);
   res.json(result);
-});
-
-router.post("/tasks/", async (req, res) => {
-  res.json("task functions");
 });
 
 router.post("/tasks/getToday", async (req, res) => {
