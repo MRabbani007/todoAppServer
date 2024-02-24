@@ -1,6 +1,6 @@
 const TaskList = require("../db_schemas/lists");
 const Task = require("../db_schemas/tasks");
-const { getDate } = require("./utils");
+const { getDate } = require("../data/utils");
 
 const getUserLists = async (userID) => {
   try {

@@ -1,15 +1,7 @@
 const express = require("express");
 const taskRouter = express();
+const { getUserID } = require("../functions/userFunctions");
 const {
-  signUpUser,
-  signInUser,
-  getUserID,
-} = require("../functions/userFunctions");
-const {
-  createList,
-  getUserLists,
-  removeList,
-  updateList,
   getListTasks,
   addTask,
   removeTask,
@@ -65,7 +57,7 @@ taskRouter.post("/getWeek", async (req, res) => {
   }
 });
 
-// Handle Cart Requests
+//
 taskRouter.post("/create", async (req, res) => {
   let userName = req.body.userName;
   let listID = req.body.listID;
