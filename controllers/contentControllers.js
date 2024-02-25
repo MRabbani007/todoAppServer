@@ -49,7 +49,7 @@ const handleLists = async (req, res) => {
       case ACTIONS.REMOVE_LIST: {
         const data = await TaskList.deleteOne({
           userID: userID,
-          id: listID,
+          id: payload.listID,
         }).exec();
         return res
           .status(204)
@@ -180,12 +180,38 @@ const handleTasks = async (req, res) => {
         }
       }
       case ACTIONS.GET_TASKS_WEEK: {
-        console.log(payload?.day, payload?.offset);
         const data = await Task.find({
           userID: userID,
           completed: false,
           dueDate: {
             $gte: new Date(payload?.day),
+            $lte: new Date(payload?.offset),
+          },
+        });
+        if (!data) {
+          return res.status(200).json([]);
+        } else {
+          return res.status(200).json(data);
+        }
+      }
+      case ACTIONS.GET_TASKS_IMPORTANT: {
+        const data = await Task.find({
+          userID: userID,
+          completed: false,
+          priority: "high",
+        });
+        if (!data) {
+          return res.status(200).json([]);
+        } else {
+          return res.status(200).json(data);
+        }
+      }
+      case ACTIONS.GET_TASKS_OVERDUE: {
+        const data = await Task.find({
+          userID: userID,
+          completed: false,
+          dueDate: {
+            $gte: new Date("2000-01-01"),
             $lte: new Date(payload?.offset),
           },
         });
