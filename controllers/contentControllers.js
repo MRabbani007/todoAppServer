@@ -40,8 +40,8 @@ const handleLists = async (req, res) => {
           .json({ status: "success", message: "List created" });
       }
       case ACTIONS.UPDATE_LIST: {
-        let { listID, updateData } = payload;
-        await updateList(listID, updateData);
+        let { listID, updateItem, newValue } = payload;
+        await updateList(listID, updateItem, newValue);
         return res
           .status(204)
           .json({ status: "success", message: "List updated" });
@@ -67,21 +67,51 @@ const handleLists = async (req, res) => {
   }
 };
 
-const updateList = async (listID, updateData) => {
+const handleListSummary = async (req, res) => {
   try {
-    switch (updateData.updateItem) {
+    const action = req?.body?.action;
+    const userName = action?.payload?.userName;
+    const { type, payload } = action;
+
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
+    let data = await Task.aggregate([
+      {
+        $match: { userID: userID },
+      },
+      {
+        $group: {
+          _id: "$listID",
+          total: { $count: {} },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$completed", true] }, 1, 0] },
+          },
+          pending: {
+            $sum: { $cond: [{ $eq: ["$completed", false] }, 1, 0] },
+          },
+        },
+      },
+    ]);
+
+    return res.json(data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const updateList = async (listID, updateItem, newValue) => {
+  try {
+    switch (updateItem) {
       case "list_title": {
         TaskList.updateOne(
           { id: listID },
-          { $set: { title: updateData.newValue } }
+          { $set: { title: newValue } }
         ).exec();
         break;
       }
       case "list_icon": {
-        TaskList.updateOne(
-          { id: listID },
-          { $set: { icon: updateData.newValue } }
-        ).exec();
+        TaskList.updateOne({ id: listID }, { $set: { icon: newValue } }).exec();
         break;
       }
       case "trash": {
@@ -269,4 +299,5 @@ const updateTask = async (userID, updateData) => {
 module.exports = {
   handleLists,
   handleTasks,
+  handleListSummary,
 };
