@@ -322,8 +322,20 @@ const updateTask = async (userID, updateData) => {
   }
 };
 
+const tasksGetAll = async (req, res) => {
+  try {
+    let data = await Task.find({});
+    if (data) {
+      return res.json(data);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   handleLists,
   handleTasks,
   handleListSummary,
+  tasksGetAll,
 };

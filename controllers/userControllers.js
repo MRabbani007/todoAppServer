@@ -323,6 +323,7 @@ const handleUserEditSettings = async (req, res) => {
   try {
     const action = req?.body?.action;
     const { type, payload } = action;
+    console.log(action);
     switch (type) {
       case "EDIT_NAME": {
         if (!payload?.name) {
@@ -370,16 +371,16 @@ const handleUserEditSettings = async (req, res) => {
         }
       }
       // TODO: add edit currency
-      case "EDIT_DISPLAY_CURRENCY": {
-        if (!payload?.currency) {
+      case "EDIT_ROLES": {
+        if (!payload?.roles) {
           return res
             .status(200)
-            .json({ status: "failed", message: "currency not found" });
+            .json({ status: "failed", message: "roles not found" });
         } else {
           const data = await user
             .updateOne(
-              { username: payload?.username },
-              { $set: { currency: payload?.currency } }
+              { username: payload?.editUser },
+              { $set: { roles: payload?.roles } }
             )
             .exec();
           return res.status(200).json({ status: "success", message: "added" });

@@ -2,12 +2,12 @@ const express = require("express");
 const verifyJWT = require("../middleware/verifyJWT");
 
 const router = express();
-// Import User Functions
 
-// Router for client requests
+// Routers for client requests
 const userRouter = require("./userRouter");
 const listRouter = require("./listRouter");
 const taskRouter = require("./taskRouter");
+const notesRouter = require("./notesRouter");
 
 // Handle user registration and authentication
 router.use("/user", userRouter);
@@ -17,5 +17,6 @@ router.use(verifyJWT);
 
 router.use("/lists", listRouter);
 router.use("/tasks", taskRouter);
+router.use("/notes", notesRouter);
 
 module.exports = router;
