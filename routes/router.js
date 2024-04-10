@@ -9,6 +9,7 @@ const listRouter = require("./listRouter");
 const taskRouter = require("./taskRouter");
 const tagRouter = require("./tagRouter");
 const notesRouter = require("./notesRouter");
+const journalRouter = require("./journalRouter");
 
 // Handle user registration and authentication
 router.use("/user", userRouter);
@@ -20,5 +21,6 @@ router.use("/lists", listRouter);
 router.use("/tasks", taskRouter);
 router.use("/tags", tagRouter);
 router.use("/notes", notesRouter);
+router.use("/journal", journalRouter);
 
 module.exports = router;
