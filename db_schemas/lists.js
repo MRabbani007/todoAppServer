@@ -5,6 +5,8 @@ const listSchema = new mongoose.Schema({
   id: { type: String, required: false },
   userID: { type: String, required: false },
   title: { type: String, required: false },
+  status: { type: String, required: false },
+  type: { type: String, required: false },
   createDate: { type: Date, required: false },
   icon: { type: String, required: false },
   tasks: [{ type: String, required: false }],

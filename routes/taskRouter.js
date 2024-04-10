@@ -1,19 +1,30 @@
 const express = require("express");
 const verifyRoles = require("../middleware/verifyRoles");
 const {
-  handleTasks,
-  tasksGetAll,
-} = require("../controllers/contentControllers");
+  getTasksList,
+  createTask,
+  updateTask,
+  deleteTask,
+  getTasksToday,
+  getTasksWeek,
+  getTasksImportant,
+  getTasksOverDue,
+  getTasksAll,
+  deleteTags,
+} = require("../controllers/taskControllers");
 const taskRouter = express();
 
-taskRouter.post("/getList", handleTasks);
-taskRouter.post("/getToday", handleTasks);
-taskRouter.post("/getWeek", handleTasks);
-taskRouter.post("/getImportant", handleTasks);
-taskRouter.post("/getOverdue", handleTasks);
-taskRouter.post("/getAll", tasksGetAll);
-taskRouter.post("/create", handleTasks);
-taskRouter.post("/update", handleTasks);
-taskRouter.post("/remove", handleTasks);
+taskRouter.post("/getList", getTasksList);
+taskRouter.post("/getToday", getTasksToday);
+taskRouter.post("/getWeek", getTasksWeek);
+taskRouter.post("/getImportant", getTasksImportant);
+taskRouter.post("/getOverdue", getTasksOverDue);
+taskRouter.post("/create", createTask);
+taskRouter.post("/update", updateTask);
+taskRouter.post("/remove", deleteTask);
+taskRouter.post("/deleteAllTags", deleteTags);
+
+// for Admin
+taskRouter.post("/getAll", getTasksAll);
 
 module.exports = taskRouter;

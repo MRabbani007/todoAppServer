@@ -7,6 +7,7 @@ const router = express();
 const userRouter = require("./userRouter");
 const listRouter = require("./listRouter");
 const taskRouter = require("./taskRouter");
+const tagRouter = require("./tagRouter");
 const notesRouter = require("./notesRouter");
 
 // Handle user registration and authentication
@@ -17,6 +18,7 @@ router.use(verifyJWT);
 
 router.use("/lists", listRouter);
 router.use("/tasks", taskRouter);
+router.use("/tags", tagRouter);
 router.use("/notes", notesRouter);
 
 module.exports = router;
