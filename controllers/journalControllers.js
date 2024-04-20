@@ -99,7 +99,7 @@ const deleteJournal = async (req, res) => {
     console.log("Journal Request:", type);
 
     const response = await Journal.deleteOne({
-      id: payload?.Journal?.id,
+      id: payload?.journal?.id,
     }).exec();
     return res.status(204).json({ status: "success", message: "Tag removed" });
   } catch (err) {
