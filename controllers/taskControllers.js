@@ -1,27 +1,20 @@
 const { getDate } = require("date-fns");
 const Task = require("../db_schemas/tasks");
 const { getUserID } = require("./userControllers");
+const ACTIONS = require("../data/actions");
 
 // Get tasks for a listID
 const getTasksList = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const listID = req?.query?.listID;
 
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    console.log("Task Request:", type);
-
-    const data = await Task.find({ listID: payload?.listID });
+    const data = await Task.find({ listID });
     if (!data) {
       return res.status(200).json([]);
     } else {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -169,8 +162,6 @@ const createTask = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Task Request:", type);
-
     let { id, listID, title } = payload.newTask;
     const newTask = new Task({
       id,
@@ -196,40 +187,47 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const action = req?.body?.action;
-    const userName = action?.payload?.userName;
     const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    console.log("Task Request:", type);
-
-    await handleUpdateTask(userID, payload.updateData);
-    return res.status(204).json({ status: "success", message: "Task updated" });
+    console.log(action);
+    switch (type) {
+      case ACTIONS.UPDATE_TASK_TITLE: {
+        await editTaskTitle(payload?.task);
+        break;
+      }
+      case ACTIONS.UPDATE_TASK_COMPLETE: {
+        await editTaskCompleted(payload?.task);
+        break;
+      }
+      case ACTIONS.UPDATE_TASK_DUEDATE: {
+        await editTaskDueDate(payload?.task);
+        break;
+      }
+      case ACTIONS.UPDATE_TASK_DETAILS: {
+        await editTaskDetail(payload?.task);
+        break;
+      }
+      case ACTIONS.UPDATE_TASK_PRIORITY: {
+        await editTaskPriority(payload?.task);
+        break;
+      }
+      default: {
+      }
+    }
+    return res.status(204);
   } catch (err) {
-    console.log(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
 const deleteTask = async (req, res) => {
   try {
     const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const id = action?.payload?.id;
 
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    console.log("Task Request:", type);
-
-    const response = await Task.deleteOne({
-      id: payload.taskID,
-    }).exec();
-    return res.status(204).json({ status: "success", message: "Task removed" });
+    const response = await Task.deleteOne({ id }).exec();
+    return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
@@ -267,56 +265,33 @@ const getListSummary = async (req, res) => {
   }
 };
 
-const handleUpdateTask = async (userID, updateData) => {
-  try {
-    switch (updateData.updateItem) {
-      // listID: updateData.listID,
-      case "task_title": {
-        Task.updateOne(
-          { id: updateData.taskID },
-          { $set: { title: updateData.newValue } }
-        ).exec();
-        break;
-      }
-      case "task_complete": {
-        Task.updateOne(
-          { id: updateData.taskID },
-          { $set: { completed: updateData.newValue } }
-        ).exec();
-        break;
-      }
-      case "due_date": {
-        Task.updateOne(
-          { id: updateData.taskID },
-          { $set: { dueDate: new Date(updateData.newValue) } }
-        ).exec();
-        break;
-      }
-      case "detail": {
-        Task.updateOne(
-          { id: updateData.taskID },
-          { $set: { details: updateData.newValue } }
-        ).exec();
-        break;
-      }
-      case "priority": {
-        Task.updateOne(
-          { id: updateData.taskID },
-          { $set: { priority: updateData.newValue } }
-        ).exec();
-        break;
-      }
-      default: {
-      }
-    }
-  } catch (error) {
-    return "Error: Update Task";
-  }
+const editTaskTitle = async ({ id, title }) => {
+  const data = await Task.updateOne({ id }, { $set: { title } }).exec();
+  return data?.acknowledged;
+};
+const editTaskCompleted = async ({ id, completed }) => {
+  const data = await Task.updateOne({ id }, { $set: { completed } }).exec();
+  return data?.acknowledged;
+};
+const editTaskDueDate = async ({ id, dueDate }) => {
+  const data = await Task.updateOne(
+    { id },
+    { $set: { dueDate: new Date(dueDate) } }
+  ).exec();
+  return data?.acknowledged;
+};
+const editTaskDetail = async ({ id, details }) => {
+  const data = await Task.updateOne({ id }, { $set: { details } }).exec();
+  return data?.acknowledged;
+};
+const editTaskPriority = async ({ id, priority }) => {
+  const data = await Task.updateOne({ id }, { $set: { priority } }).exec();
+  console.log(id, priority);
+  return data?.acknowledged;
 };
 
 const deleteTags = async (req, res) => {
   await Task.updateMany({}, { $set: { tags: [] } });
-  console.log("first");
   res.sendStatus(200);
 };
 

@@ -14,14 +14,18 @@ const {
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
-taskRouter.post("/getList", getTasksList);
 taskRouter.post("/getToday", getTasksToday);
 taskRouter.post("/getWeek", getTasksWeek);
 taskRouter.post("/getImportant", getTasksImportant);
 taskRouter.post("/getOverdue", getTasksOverDue);
-taskRouter.post("/create", createTask);
-taskRouter.post("/update", updateTask);
-taskRouter.post("/remove", deleteTask);
+
+taskRouter
+  .route("/main")
+  .get(getTasksList)
+  .post(createTask)
+  .patch(updateTask)
+  .delete(deleteTask);
+
 taskRouter.post("/deleteAllTags", deleteTags);
 
 // for Admin
