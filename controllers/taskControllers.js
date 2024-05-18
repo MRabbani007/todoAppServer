@@ -7,7 +7,6 @@ const ACTIONS = require("../data/actions");
 const getTasksList = async (req, res) => {
   try {
     const listID = req?.query?.listID;
-
     const data = await Task.find({ listID });
     if (!data) {
       return res.status(200).json([]);
@@ -29,8 +28,6 @@ const getTasksToday = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Task Request:", type);
-
     const day = payload?.day || getDate();
     const data = await Task.find({
       userID: userID,
@@ -46,7 +43,6 @@ const getTasksToday = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -60,8 +56,6 @@ const getTasksWeek = async (req, res) => {
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
-
-    console.log("Task Request:", type);
 
     const data = await Task.find({
       userID: userID,
@@ -77,7 +71,6 @@ const getTasksWeek = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -92,8 +85,6 @@ const getTasksImportant = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Task Request:", type);
-
     const data = await Task.find({
       userID: userID,
       completed: false,
@@ -105,7 +96,6 @@ const getTasksImportant = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -119,8 +109,6 @@ const getTasksOverDue = async (req, res) => {
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
-
-    console.log("Task Request:", type);
 
     const data = await Task.find({
       userID: userID,
@@ -136,7 +124,6 @@ const getTasksOverDue = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -148,9 +135,7 @@ const getTasksAll = async (req, res) => {
     if (data) {
       return res.json(data);
     }
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const createTask = async (req, res) => {
@@ -179,8 +164,7 @@ const createTask = async (req, res) => {
     const data = await newTask.save();
     return res.status(200).json({ status: "success", message: "List created" });
   } catch (err) {
-    console.log(err);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
@@ -188,7 +172,6 @@ const updateTask = async (req, res) => {
   try {
     const action = req?.body?.action;
     const { type, payload } = action;
-    console.log(action);
     switch (type) {
       case ACTIONS.UPDATE_TASK_TITLE: {
         await editTaskTitle(payload?.task);
@@ -223,6 +206,8 @@ const deleteTask = async (req, res) => {
   try {
     const action = req?.body?.action;
     const id = action?.payload?.id;
+
+    if (!id) return res.sendStatus(400);
 
     const response = await Task.deleteOne({ id }).exec();
     return res.sendStatus(204);
@@ -261,7 +246,7 @@ const getListSummary = async (req, res) => {
 
     return res.json(data);
   } catch (error) {
-    console.log(error);
+    return res.sendStatus(500);
   }
 };
 
@@ -286,7 +271,6 @@ const editTaskDetail = async ({ id, details }) => {
 };
 const editTaskPriority = async ({ id, priority }) => {
   const data = await Task.updateOne({ id }, { $set: { priority } }).exec();
-  console.log(id, priority);
   return data?.acknowledged;
 };
 
