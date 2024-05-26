@@ -7,8 +7,6 @@ const getLists = async (req, res) => {
     const userName = action?.payload?.userName;
     const { type, payload } = action;
 
-    console.log("List Request:", type);
-
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
@@ -19,8 +17,7 @@ const getLists = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ status: "error", message: "Server Error" });
+    return res.sendStatus(500);
   }
 };
 

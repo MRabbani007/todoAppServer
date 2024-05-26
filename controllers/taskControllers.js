@@ -18,6 +18,28 @@ const getTasksList = async (req, res) => {
   }
 };
 
+const getTasksTaskList = async (req, res) => {
+  try {
+    const userName = req?.query?.userName;
+    if (!userName) return res.sendStatus(400);
+
+    const userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
+    const listID = "task_list";
+
+    const data = await Task.find({ userID, listID });
+    if (!data) {
+      return res.status(200).json([]);
+    } else {
+      return res.status(200).json(data);
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+};
+
 // Get User Tasks for Today
 const getTasksToday = async (req, res) => {
   try {
@@ -131,10 +153,17 @@ const getTasksOverDue = async (req, res) => {
 // Get All Tasks
 const getTasksAll = async (req, res) => {
   try {
-    let data = await Task.find({});
-    if (data) {
-      return res.json(data);
-    }
+    let userName = req?.body?.userName;
+    if (!userName) return res.sendStatus(400);
+
+    const userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
+    let data = await Task.find({ userID });
+
+    if (!data) return res.json([]);
+
+    return res.json(data);
   } catch (error) {}
 };
 
@@ -280,6 +309,7 @@ const deleteTags = async (req, res) => {
 };
 
 module.exports = {
+  getTasksTaskList,
   getTasksList,
   getTasksToday,
   getTasksWeek,

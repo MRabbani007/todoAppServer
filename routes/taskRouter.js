@@ -11,6 +11,7 @@ const {
   getTasksOverDue,
   getTasksAll,
   deleteTags,
+  getTasksTaskList,
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
@@ -26,9 +27,11 @@ taskRouter
   .patch(updateTask)
   .delete(deleteTask);
 
+taskRouter.route("/user").get(getTasksTaskList);
+
 taskRouter.post("/deleteAllTags", deleteTags);
 
-// for Admin
+// get all user tasks
 taskRouter.post("/getAll", getTasksAll);
 
 module.exports = taskRouter;
