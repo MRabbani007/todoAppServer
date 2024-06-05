@@ -10,6 +10,7 @@ const {
   handleUserEditSettings,
   handleUserPassword,
 } = require("../controllers/userControllers");
+const User = require("../db_schemas/user");
 const userRouter = express();
 
 // Signup Request
@@ -33,8 +34,9 @@ userRouter
 
 userRouter.route("/pwd").post(verifyRoles(2001), handleUserPassword);
 
-userRouter.post("/*", (req, res) => {
-  console.log(req.params.name);
+userRouter.get("/*", async (req, res) => {
+  // console.log(req.params.name);
+  const data = await User.find({});
   res.json("Server Running");
 });
 

@@ -52,17 +52,21 @@ const handleSignUp = async (req, res) => {
 };
 
 const handleSignIn = async (req, res) => {
-  // TODO: Implement Signin
-  // get username and password from client
-  let { username, password } = req?.body?.payload;
-  if (!username || !password) {
-    res.status(400).json({
-      status: "failed",
-      message: "Username and Password are required",
-    });
-  } else {
-    console.log("Signin Request", username);
-    try {
+  try {
+    // TODO: Implement Signin
+    // get username and password from client
+    console.log(req.body);
+    let username = req?.body?.payload?.username;
+    let password = req?.body?.payload?.password;
+
+    if (!username || !password) {
+      res.status(400).json({
+        status: "failed",
+        message: "Username and Password are required",
+      });
+    } else {
+      console.log("Signin Request", username);
+
       let foundUser = await user.findOne({ username: username });
       if (!foundUser) {
         res.status(401).json({ status: "failed", message: "wrong details" });
@@ -122,10 +126,10 @@ const handleSignIn = async (req, res) => {
           res.status(401).json({ status: "failed", message: "wrong password" });
         }
       }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ status: "error", message: "Error: Signin error" });
     }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Error: Signin error" });
   }
 };
 

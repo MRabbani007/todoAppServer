@@ -3,7 +3,11 @@ mongoose.set("strictQuery", false);
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_URI, {
+    const DB_URI = process.env.DATABASE_URI;
+
+    if (!DB_URI) throw new Error("Database URL Not Found");
+
+    await mongoose.connect(DB_URI, {
       // useUnifiedTopology: true,
       // useNewUrlParser: true,
     });
