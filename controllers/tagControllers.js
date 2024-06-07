@@ -10,8 +10,6 @@ const getTagsAll = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Tag Request:", type);
-
     const data = await Tag.find({ userID });
     if (!data) {
       return res.status(200).json([]);
@@ -19,7 +17,6 @@ const getTagsAll = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };

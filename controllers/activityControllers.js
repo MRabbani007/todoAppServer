@@ -1,16 +1,14 @@
-const Journal = require("../db_schemas/journal");
+const Activity = require("../db_schemas/activity");
 const { getUserID } = require("./userControllers");
 
-const getJournal = async (req, res) => {
+const getActivities = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.query?.userName;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const data = await Journal.find({ userID });
+    const data = await Activity.find({ userID });
     if (!data) {
       return res.status(200).json([]);
     } else {
@@ -21,7 +19,7 @@ const getJournal = async (req, res) => {
   }
 };
 
-const createJournal = async (req, res) => {
+const createActivity = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
@@ -30,27 +28,30 @@ const createJournal = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, detail, color, planDate, onDate } = payload.journal;
-    const newJournal = new Journal({
+    let { id, title, detail, ownername, color, icon } = payload.activity;
+    const newActivity = new Activity({
       id,
       userID,
+      ownername,
+      shared: false,
+      teams: [],
       title,
       detail,
       color,
-      onDate,
-      planDate,
-      timeFrom: "",
-      timeTo: "",
+      icon,
+      time: "",
+      completed: false,
       createDate: new Date(),
     });
-    const data = await newJournal.save();
+    const data = await newActivity.save();
+    console.log(data);
     return res.sendStatus(204);
   } catch (err) {
     res.sendStatus(500);
   }
 };
 
-const updateJournal = async (req, res) => {
+const updateActivity = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
@@ -59,30 +60,27 @@ const updateJournal = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const { id, title, detail, onDate, color } = payload.journal;
+    const { id, title, detail, icon, color } = payload.activity;
 
-    console.log(payload.journal);
-    const data = await Journal.updateOne(
+    const data = await Activity.updateOne(
       { id },
       {
         $set: {
           title,
           detail,
-          onDate: new Date(onDate),
+          icon,
           color,
         },
       }
     );
-    console.log(data);
 
     return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
 
-const deleteJournal = async (req, res) => {
+const deleteActivity = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
@@ -91,8 +89,8 @@ const deleteJournal = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const response = await Journal.deleteOne({
-      id: payload?.journal?.id,
+    const response = await Activity.deleteOne({
+      id: payload?.activity?.id,
     }).exec();
     return res.sendStatus(204);
   } catch (err) {
@@ -100,4 +98,9 @@ const deleteJournal = async (req, res) => {
   }
 };
 
-module.exports = { getJournal, createJournal, updateJournal, deleteJournal };
+module.exports = {
+  getActivities,
+  createActivity,
+  updateActivity,
+  deleteActivity,
+};

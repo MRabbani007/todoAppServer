@@ -32,6 +32,6 @@ taskRouter.route("/user").get(getTasksTaskList);
 taskRouter.post("/deleteAllTags", deleteTags);
 
 // get all user tasks
-taskRouter.post("/getAll", getTasksAll);
+taskRouter.get("/getAll", getTasksAll);
 
 module.exports = taskRouter;

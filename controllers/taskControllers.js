@@ -153,7 +153,7 @@ const getTasksOverDue = async (req, res) => {
 // Get All Tasks
 const getTasksAll = async (req, res) => {
   try {
-    let userName = req?.body?.userName;
+    let userName = req?.query?.userName;
     if (!userName) return res.sendStatus(400);
 
     const userID = await getUserID(userName);

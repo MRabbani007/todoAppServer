@@ -4,14 +4,15 @@ const jwt = require("jsonwebtoken");
 const { ACTIONS } = require("../data/utils");
 
 const handleSignUp = async (req, res) => {
-  // get username and password from client
-  let { username, password } = req.body.payload;
-  if (!username || !password) {
-    console.log("Signup Request: Missing Credentials");
-    res.status(400).json({ message: "Username and Password are required" });
-  } else {
-    console.log("Signup Request", username, password);
-    try {
+  try {
+    // get username and password from client
+    let { username, password } = req.body.payload;
+    if (!username || !password) {
+      console.log("Signup Request: Missing Credentials");
+      res.status(400).json({ message: "Username and Password are required" });
+    } else {
+      console.log("Signup Request", username, password);
+
       const duplicate = await user.findOne({ username: username }).exec();
       // check if already registered
       if (duplicate) {
@@ -45,9 +46,9 @@ const handleSignUp = async (req, res) => {
           message: "user registered",
         });
       }
-    } catch (error) {
-      res.status(500).json({ status: "error", message: "Signup error" });
     }
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Signup error" });
   }
 };
 
@@ -55,7 +56,6 @@ const handleSignIn = async (req, res) => {
   try {
     // TODO: Implement Signin
     // get username and password from client
-    console.log(req.body);
     let username = req?.body?.payload?.username;
     let password = req?.body?.payload?.password;
 
@@ -65,8 +65,6 @@ const handleSignIn = async (req, res) => {
         message: "Username and Password are required",
       });
     } else {
-      console.log("Signin Request", username);
-
       let foundUser = await user.findOne({ username: username });
       if (!foundUser) {
         res.status(401).json({ status: "failed", message: "wrong details" });
@@ -86,14 +84,12 @@ const handleSignIn = async (req, res) => {
           }
 
           if (match) {
-            console.log(foundUser.roles);
             const roles = Object.values(foundUser.roles).filter(Boolean);
             const accessToken = jwt.sign(
               { UserInfo: { username: foundUser.username, roles: roles } },
               process.env.ACCESS_TOKEN_SECRET,
               { expiresIn: "1h" }
             );
-            console.log(roles);
             const refreshToken = jwt.sign(
               { username: foundUser.username },
               process.env.REFRESH_TOKEN_SECRET,
@@ -128,53 +124,56 @@ const handleSignIn = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", message: "Error: Signin error" });
+    res.sendStatus(500);
   }
 };
 
 const handleRefreshToken = async (req, res) => {
-  const cookies = req.cookies;
-  // const username = req.body.username;
-  if (!cookies?.jwt) {
-    return res.sendStatus(401); // not authorized
-  } else {
-    const refreshToken = cookies.jwt;
-    const foundUser = await user
-      .findOne({
-        refreshToken: refreshToken,
-      })
-      .exec();
-    if (!foundUser) {
-      console.log("handleRefreshToken: user not found");
-      return res.sendStatus(403); // forbiden
+  try {
+    const cookies = req.cookies;
+    // const username = req.body.username;
+    if (!cookies?.jwt) {
+      return res.sendStatus(401); // not authorized
     } else {
-      // evaluate JWT
-      jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-        (error, decoded) => {
-          if (error || foundUser.username !== decoded.username) {
-            res.sendStatus(403);
-          } else {
-            const roles = Object.values(foundUser.roles);
-            const accessToken = jwt.sign(
-              {
-                UserInfo: {
-                  username: decoded.username,
-                  roles: roles,
+      const refreshToken = cookies.jwt;
+      const foundUser = await user
+        .findOne({
+          refreshToken: refreshToken,
+        })
+        .exec();
+      if (!foundUser) {
+        console.log("handleRefreshToken: user not found");
+        return res.sendStatus(403); // forbiden
+      } else {
+        // evaluate JWT
+        jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET,
+          (error, decoded) => {
+            if (error || foundUser.username !== decoded.username) {
+              res.sendStatus(403);
+            } else {
+              const roles = Object.values(foundUser.roles);
+              const accessToken = jwt.sign(
+                {
+                  UserInfo: {
+                    username: decoded.username,
+                    roles: roles,
+                  },
                 },
-              },
-              process.env.ACCESS_TOKEN_SECRET,
-              { expiresIn: "10m" }
-            );
-            res
-              .status(200)
-              .json({ user: foundUser.username, roles, accessToken });
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: "10m" }
+              );
+              res
+                .status(200)
+                .json({ user: foundUser.username, roles, accessToken });
+            }
           }
-        }
-      );
+        );
+      }
     }
+  } catch (e) {
+    return res.sendStatus(500);
   }
 };
 

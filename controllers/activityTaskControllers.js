@@ -1,16 +1,13 @@
-const Journal = require("../db_schemas/journal");
+const ActivityTask = require("../db_schemas/activityTask");
 const { getUserID } = require("./userControllers");
 
-const getJournal = async (req, res) => {
+const getActivityTasks = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const activityID = req?.query?.activityID;
 
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
+    if (!activityID) return res.sendStatus(400);
 
-    const data = await Journal.find({ userID });
+    const data = await ActivityTask.find({ activityID });
     if (!data) {
       return res.status(200).json([]);
     } else {
@@ -21,7 +18,7 @@ const getJournal = async (req, res) => {
   }
 };
 
-const createJournal = async (req, res) => {
+const createActivityTask = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
@@ -30,51 +27,19 @@ const createJournal = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, detail, color, planDate, onDate } = payload.journal;
-    const newJournal = new Journal({
+    let { id, activityID, title, detail, responsible } = payload.activityTask;
+    const newActivityTask = new ActivityTask({
       id,
+      activityID,
       userID,
       title,
       detail,
-      color,
-      onDate,
-      planDate,
-      timeFrom: "",
-      timeTo: "",
+      responsible,
+      completed: false,
       createDate: new Date(),
     });
-    const data = await newJournal.save();
-    return res.sendStatus(204);
-  } catch (err) {
-    res.sendStatus(500);
-  }
-};
-
-const updateJournal = async (req, res) => {
-  try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const { id, title, detail, onDate, color } = payload.journal;
-
-    console.log(payload.journal);
-    const data = await Journal.updateOne(
-      { id },
-      {
-        $set: {
-          title,
-          detail,
-          onDate: new Date(onDate),
-          color,
-        },
-      }
-    );
+    const data = await newActivityTask.save();
     console.log(data);
-
     return res.sendStatus(204);
   } catch (err) {
     console.log(err);
@@ -82,7 +47,7 @@ const updateJournal = async (req, res) => {
   }
 };
 
-const deleteJournal = async (req, res) => {
+const updateActivityTask = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
@@ -91,8 +56,39 @@ const deleteJournal = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const response = await Journal.deleteOne({
-      id: payload?.journal?.id,
+    const { id, title, detail, responsible, dueDate, time } =
+      payload.activityTask;
+
+    const data = await ActivityTask.updateOne(
+      { id },
+      {
+        $set: {
+          title,
+          detail,
+          responsible,
+          dueDate,
+          time,
+        },
+      }
+    );
+
+    return res.sendStatus(204);
+  } catch (err) {
+    res.sendStatus(500);
+  }
+};
+
+const deleteActivityTask = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const userName = action?.payload?.userName;
+    const { type, payload } = action;
+
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
+    const response = await ActivityTask.deleteOne({
+      id: payload?.activityTask?.id,
     }).exec();
     return res.sendStatus(204);
   } catch (err) {
@@ -100,4 +96,9 @@ const deleteJournal = async (req, res) => {
   }
 };
 
-module.exports = { getJournal, createJournal, updateJournal, deleteJournal };
+module.exports = {
+  getActivityTasks,
+  createActivityTask,
+  updateActivityTask,
+  deleteActivityTask,
+};
