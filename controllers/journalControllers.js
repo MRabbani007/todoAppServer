@@ -3,9 +3,7 @@ const { getUserID } = require("./userControllers");
 
 const getJournal = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.query?.userName;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);

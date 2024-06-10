@@ -54,20 +54,22 @@ const handleSignUp = async (req, res) => {
 
 const handleSignIn = async (req, res) => {
   try {
-    // TODO: Implement Signin
     // get username and password from client
-    let username = req?.body?.payload?.username;
-    let password = req?.body?.payload?.password;
+    const payload = req.body.payload;
+    let username = payload?.username;
+    let password = payload?.password;
 
     if (!username || !password) {
-      res.status(400).json({
+      return res.status(400).json({
         status: "failed",
         message: "Username and Password are required",
       });
     } else {
       let foundUser = await user.findOne({ username: username });
       if (!foundUser) {
-        res.status(401).json({ status: "failed", message: "wrong details" });
+        return res
+          .status(401)
+          .json({ status: "failed", message: "wrong details" });
       } else {
         if (foundUser.username === username) {
           let match = {};
@@ -106,7 +108,8 @@ const handleSignIn = async (req, res) => {
               secure: true,
               maxAge: 24 * 60 * 60 * 1000,
             });
-            res.status(202).json({
+
+            return res.status(202).json({
               status: "success",
               message: "signin successful",
               user: foundUser.username,
@@ -114,17 +117,19 @@ const handleSignIn = async (req, res) => {
               accessToken,
             });
           } else {
-            res
+            return res
               .status(401)
               .json({ status: "failed", message: "wrong password" });
           }
         } else {
-          res.status(401).json({ status: "failed", message: "wrong password" });
+          return res
+            .status(401)
+            .json({ status: "failed", message: "wrong password" });
         }
       }
     }
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 

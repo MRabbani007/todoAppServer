@@ -8,8 +8,6 @@ const userRouter = require("./userRouter");
 const listRouter = require("./listRouter");
 const taskRouter = require("./taskRouter");
 const tagRouter = require("./tagRouter");
-const notesRouter = require("./notesRouter");
-const journalRouter = require("./journalRouter");
 const {
   getActivities,
   createActivity,
@@ -22,6 +20,18 @@ const {
   updateActivityTask,
   deleteActivityTask,
 } = require("../controllers/activityTaskControllers");
+const {
+  getJournal,
+  createJournal,
+  updateJournal,
+  deleteJournal,
+} = require("../controllers/journalControllers");
+const {
+  getNotes,
+  createNote,
+  editNote,
+  deleteNote,
+} = require("../controllers/noteControllers");
 
 // Handle user registration and authentication
 router.use("/user", userRouter);
@@ -32,8 +42,20 @@ router.use("/user", userRouter);
 router.use("/lists", listRouter);
 router.use("/tasks", taskRouter);
 router.use("/tags", tagRouter);
-router.use("/notes", notesRouter);
-router.use("/journal", journalRouter);
+
+router
+  .route("/notes")
+  .get(getNotes)
+  .post(createNote)
+  .patch(editNote)
+  .delete(deleteNote);
+
+router
+  .route("/journal")
+  .get(getJournal)
+  .post(createJournal)
+  .patch(updateJournal)
+  .delete(deleteJournal);
 
 router
   .route("/activity")
@@ -48,5 +70,9 @@ router
   .post(createActivityTask)
   .patch(updateActivityTask)
   .delete(deleteActivityTask);
+
+router.route("/*").get((req, res) => {
+  return res.json({ message: "Server Running" });
+});
 
 module.exports = router;
