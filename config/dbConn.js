@@ -12,7 +12,7 @@ const connectDB = async () => {
       // useNewUrlParser: true,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error connecting to DB");
   }
 };
 

@@ -5,33 +5,12 @@ const {
   createTask,
   updateTask,
   deleteTask,
-  getTasksToday,
-  getTasksWeek,
-  getTasksImportant,
-  getTasksOverDue,
-  getTasksAll,
-  deleteTags,
-  getTasksTaskList,
+  getTasks,
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
-taskRouter.post("/getToday", getTasksToday);
-taskRouter.post("/getWeek", getTasksWeek);
-taskRouter.post("/getImportant", getTasksImportant);
-taskRouter.post("/getOverdue", getTasksOverDue);
+taskRouter.route("/main").post(createTask).patch(updateTask).delete(deleteTask);
 
-taskRouter
-  .route("/main")
-  .get(getTasksList)
-  .post(createTask)
-  .patch(updateTask)
-  .delete(deleteTask);
-
-taskRouter.route("/user").get(getTasksTaskList);
-
-taskRouter.post("/deleteAllTags", deleteTags);
-
-// get all user tasks
-taskRouter.get("/getAll", getTasksAll);
+taskRouter.route("/").post(getTasks);
 
 module.exports = taskRouter;

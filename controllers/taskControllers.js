@@ -1,117 +1,82 @@
-const { getDate } = require("date-fns");
 const Task = require("../db_schemas/tasks");
 const { getUserID } = require("./userControllers");
 const ACTIONS = require("../data/actions");
+const { getDate } = require("../data/utils");
 
-// Get tasks for a listID
-const getTasksList = async (req, res) => {
+const getTasks = async (req, res) => {
   try {
-    const listID = req?.query?.listID;
-    const data = await Task.find({ listID });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
-    }
-  } catch (err) {
-    res.sendStatus(500);
-  }
-};
+    const { type, payload } = req?.body?.action;
 
-const getTasksTaskList = async (req, res) => {
-  try {
-    const userName = req?.query?.userName;
+    const userName = payload?.userName;
     if (!userName) return res.sendStatus(400);
 
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const listID = "task_list";
+    let data = [];
+    switch (type) {
+      case "ALL": {
+        data = await Task.find({ userID });
+        break;
+      }
+      case "TODAY": {
+        const day = getDate(); //payload?.day ||
 
-    const data = await Task.find({ userID, listID });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
+        data = await Task.find({
+          userID: userID,
+          completed: false,
+          dueDate: {
+            $gte: new Date(day),
+            $lte: new Date(day),
+          },
+        });
+
+        break;
+      }
+      case "WEEK": {
+        const day = getDate(1);
+        const offset = getDate(7);
+        data = await Task.find({
+          userID: userID,
+          completed: false,
+          dueDate: {
+            $gte: new Date(day),
+            $lte: new Date(offset),
+          },
+        });
+        break;
+      }
+      case "OVERDUE": {
+        const offset = getDate(-1);
+        data = await Task.find({
+          userID: userID,
+          completed: false,
+          dueDate: {
+            $gte: new Date("2000-01-01"),
+            $lte: new Date(offset),
+          },
+        });
+        break;
+      }
+      case "IMPORTANT": {
+        data = await Task.find({
+          userID: userID,
+          completed: false,
+          priority: "high",
+        });
+        break;
+      }
+      case "LIST": {
+        const listID = payload?.listID;
+        data = await Task.find({ userID, listID });
+        break;
+      }
+      default: {
+        data = [];
+      }
     }
-  } catch (err) {
-    console.log(err);
-    res.sendStatus(500);
-  }
-};
+    // const listID = "task_list";
 
-// Get User Tasks for Today
-const getTasksToday = async (req, res) => {
-  try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const day = payload?.day || getDate();
-    const data = await Task.find({
-      userID: userID,
-      completed: false,
-      dueDate: {
-        $gte: new Date(payload?.day),
-        $lte: new Date(payload?.day),
-      },
-    });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
-    }
-  } catch (err) {
-    res.sendStatus(500);
-  }
-};
-
-// Get User Tasks for 1 week
-const getTasksWeek = async (req, res) => {
-  try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const data = await Task.find({
-      userID: userID,
-      completed: false,
-      dueDate: {
-        $gte: new Date(payload?.day),
-        $lte: new Date(payload?.offset),
-      },
-    });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
-    }
-  } catch (err) {
-    res.sendStatus(500);
-  }
-};
-
-// Get User Tasks priority important
-const getTasksImportant = async (req, res) => {
-  try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const data = await Task.find({
-      userID: userID,
-      completed: false,
-      priority: "high",
-    });
     if (!data) {
       return res.status(200).json([]);
     } else {
@@ -120,51 +85,6 @@ const getTasksImportant = async (req, res) => {
   } catch (err) {
     res.sendStatus(500);
   }
-};
-
-// Get User Tasks overdue
-const getTasksOverDue = async (req, res) => {
-  try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const data = await Task.find({
-      userID: userID,
-      completed: false,
-      dueDate: {
-        $gte: new Date("2000-01-01"),
-        $lte: new Date(payload?.offset),
-      },
-    });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
-    }
-  } catch (err) {
-    res.sendStatus(500);
-  }
-};
-
-// Get All Tasks
-const getTasksAll = async (req, res) => {
-  try {
-    let userName = req?.query?.userName;
-    if (!userName) return res.sendStatus(400);
-
-    const userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    let data = await Task.find({ userID });
-
-    if (!data) return res.json([]);
-
-    return res.json(data);
-  } catch (error) {}
 };
 
 const createTask = async (req, res) => {
@@ -201,30 +121,22 @@ const updateTask = async (req, res) => {
   try {
     const action = req?.body?.action;
     const { type, payload } = action;
-    switch (type) {
-      case ACTIONS.UPDATE_TASK_TITLE: {
-        await editTaskTitle(payload?.task);
-        break;
+
+    const { id, title, details, completed, dueDate, priority } = payload?.task;
+
+    const data = await Task.updateOne(
+      { id },
+      {
+        $set: {
+          title,
+          details,
+          completed,
+          dueDate: new Date(dueDate),
+          priority,
+        },
       }
-      case ACTIONS.UPDATE_TASK_COMPLETE: {
-        await editTaskCompleted(payload?.task);
-        break;
-      }
-      case ACTIONS.UPDATE_TASK_DUEDATE: {
-        await editTaskDueDate(payload?.task);
-        break;
-      }
-      case ACTIONS.UPDATE_TASK_DETAILS: {
-        await editTaskDetail(payload?.task);
-        break;
-      }
-      case ACTIONS.UPDATE_TASK_PRIORITY: {
-        await editTaskPriority(payload?.task);
-        break;
-      }
-      default: {
-      }
-    }
+    ).exec();
+
     return res.status(204);
   } catch (err) {
     return res.sendStatus(500);
@@ -279,46 +191,10 @@ const getListSummary = async (req, res) => {
   }
 };
 
-const editTaskTitle = async ({ id, title }) => {
-  const data = await Task.updateOne({ id }, { $set: { title } }).exec();
-  return data?.acknowledged;
-};
-const editTaskCompleted = async ({ id, completed }) => {
-  const data = await Task.updateOne({ id }, { $set: { completed } }).exec();
-  return data?.acknowledged;
-};
-const editTaskDueDate = async ({ id, dueDate }) => {
-  const data = await Task.updateOne(
-    { id },
-    { $set: { dueDate: new Date(dueDate) } }
-  ).exec();
-  return data?.acknowledged;
-};
-const editTaskDetail = async ({ id, details }) => {
-  const data = await Task.updateOne({ id }, { $set: { details } }).exec();
-  return data?.acknowledged;
-};
-const editTaskPriority = async ({ id, priority }) => {
-  const data = await Task.updateOne({ id }, { $set: { priority } }).exec();
-  return data?.acknowledged;
-};
-
-const deleteTags = async (req, res) => {
-  await Task.updateMany({}, { $set: { tags: [] } });
-  res.sendStatus(200);
-};
-
 module.exports = {
-  getTasksTaskList,
-  getTasksList,
-  getTasksToday,
-  getTasksWeek,
-  getTasksImportant,
-  getTasksOverDue,
-  getTasksAll,
+  getTasks,
   createTask,
   updateTask,
   deleteTask,
   getListSummary,
-  deleteTags,
 };

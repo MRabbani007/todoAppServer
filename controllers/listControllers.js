@@ -1,4 +1,5 @@
 const TaskList = require("../db_schemas/lists");
+const Task = require("../db_schemas/tasks");
 const { getUserID } = require("./userControllers");
 
 const getLists = async (req, res) => {
@@ -111,6 +112,10 @@ const handleUpdate = async (listID, updateItem, newValue) => {
           { id: listID },
           { $set: { trash: true } }
         ).exec();
+        const temp = await Task.updateMany(
+          { listID },
+          { $set: { trash: true } }
+        );
         break;
       }
       case "un_trash": {
@@ -118,6 +123,10 @@ const handleUpdate = async (listID, updateItem, newValue) => {
           { id: listID },
           { $set: { trash: false } }
         ).exec();
+        const temp = await Task.updateMany(
+          { listID },
+          { $set: { trash: false } }
+        );
         break;
       }
       // case "due_date": {

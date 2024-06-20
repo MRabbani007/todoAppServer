@@ -59,7 +59,6 @@ const updateJournal = async (req, res) => {
 
     const { id, title, detail, onDate, color } = payload.journal;
 
-    console.log(payload.journal);
     const data = await Journal.updateOne(
       { id },
       {
@@ -71,11 +70,9 @@ const updateJournal = async (req, res) => {
         },
       }
     );
-    console.log(data);
 
     return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
