@@ -57,8 +57,6 @@ const updateList = async (req, res) => {
     const userName = action?.payload?.userName;
     const { type, payload } = action;
 
-    console.log("List Request:", type);
-
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
@@ -105,6 +103,13 @@ const handleUpdate = async (listID, updateItem, newValue) => {
       }
       case "list_icon": {
         TaskList.updateOne({ id: listID }, { $set: { icon: newValue } }).exec();
+        break;
+      }
+      case "list_pin": {
+        TaskList.updateOne(
+          { id: listID },
+          { $set: { pinned: newValue } }
+        ).exec();
         break;
       }
       case "trash": {

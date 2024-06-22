@@ -8,7 +8,12 @@ const taskSchema = new mongoose.Schema({
   title: { type: String, required: false, default: "" },
   details: { type: String, required: false, default: "" },
   priority: { type: String, required: false, default: "low" },
-  tags: { type: [String], required: false, default: [] },
+  tags: [
+    {
+      id: { type: Number, default: 0 },
+      name: { type: String, required: false, default: "" },
+    },
+  ],
   createDate: { type: Date, required: false, default: new Date() },
   dueDate: { type: Date, required: false },
   dueTime: { type: String, required: false },

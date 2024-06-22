@@ -157,6 +157,61 @@ const deleteTask = async (req, res) => {
   }
 };
 
+const addTaskTag = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const tag = action?.payload?.tag;
+
+    if (!tag?.id) return res.sendStatus(400);
+
+    const data = await Task.updateOne(
+      { id: tag.taskID },
+      { $push: { tags: tag } }
+    ).exec();
+
+    return res.status(204);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+};
+
+const updateTaskTag = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const { type, payload } = action;
+
+    let { _id, name, taskID } = payload.tag;
+
+    const data = await Task.updateOne(
+      { id: taskID, "tags._id": _id },
+      { $set: { "tags.$.name": name } }
+    ).exec();
+
+    return res.status(204);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+};
+
+const deleteTaskTag = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    let { _id, taskID, name } = action?.payload?.tag;
+
+    const data = await Task.updateOne(
+      { id: taskID },
+      { $pull: { tags: { _id } } }
+    ).exec();
+
+    return res.status(204);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+};
+
 // Get count of tasks (Total & Open) for each list
 const getListSummary = async (req, res) => {
   try {
@@ -191,10 +246,111 @@ const getListSummary = async (req, res) => {
   }
 };
 
+const getTaskSummary = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const userName = action?.payload?.userName;
+    const { type, payload } = action;
+
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(400);
+
+    const day = getDate();
+    const yesterday = getDate(-1);
+    const weekStart = getDate(1);
+    const weekEnd = getDate(7);
+
+    const data = await Task.aggregate([
+      {
+        $match: { userID: userID },
+      },
+      {
+        $group: {
+          _id: "$userID",
+          total: { $count: {} },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$completed", true] }, 1, 0] },
+          },
+          pending: {
+            $sum: { $cond: [{ $eq: ["$completed", false] }, 1, 0] },
+          },
+          today: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date(day)] },
+                    { $lte: ["$dueDate", new Date(day)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          week: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date(weekStart)] },
+                    { $lte: ["$dueDate", new Date(weekEnd)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          overdue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date("2000-01-01")] },
+                    { $lte: ["$dueDate", new Date(yesterday)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          important: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$priority", "high"] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    return res.status(200).json(data[0]);
+  } catch (err) {
+    console.log(err);
+    return res.sendStatus(500);
+  }
+};
+
 module.exports = {
   getTasks,
   createTask,
   updateTask,
   deleteTask,
   getListSummary,
+  getTaskSummary,
+  addTaskTag,
+  updateTaskTag,
+  deleteTaskTag,
 };

@@ -5,12 +5,12 @@ const getTagsAll = async (req, res) => {
   try {
     const action = req?.body?.action;
     const userName = action?.payload?.userName;
-    const { type, payload } = action;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
     const data = await Tag.find({ userID });
+
     if (!data) {
       return res.status(200).json([]);
     } else {
@@ -54,8 +54,6 @@ const createTag = async (req, res) => {
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
-
-    console.log("Tag Request:", type);
 
     let { id, listID, taskID, name } = payload.tag;
     const newTag = new Tag({
