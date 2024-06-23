@@ -11,6 +11,7 @@ const listSchema = new mongoose.Schema({
   icon: { type: String, required: false, default: "" },
   tasks: { type: [String], required: false },
   pinned: { type: Boolean, required: false, default: false },
+  sortIndex: { type: Number, required: false, default: 0 },
   trash: { type: Boolean, required: false, default: false },
   trashDate: { type: Date, required: false },
 });

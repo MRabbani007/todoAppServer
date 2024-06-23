@@ -62,7 +62,7 @@ const getTasks = async (req, res) => {
         data = await Task.find({
           userID: userID,
           completed: false,
-          priority: "high",
+          priority: { $in: ["high", "important"] },
         });
         break;
       }
@@ -96,7 +96,7 @@ const createTask = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, listID, title } = payload.newTask;
+    let { id, listID, title, sortIndex } = payload.newTask;
     const newTask = new Task({
       id,
       userID: userID,
@@ -104,6 +104,8 @@ const createTask = async (req, res) => {
       title,
       details: "",
       priority: "low",
+      priorityLevel: 1,
+      sortIndex,
       tags: [],
       createDate: new Date(),
       dueDate: new Date(),
@@ -122,7 +124,18 @@ const updateTask = async (req, res) => {
     const action = req?.body?.action;
     const { type, payload } = action;
 
-    const { id, title, details, completed, dueDate, priority } = payload?.task;
+    const {
+      id,
+      title,
+      details,
+      completed,
+      dueDate,
+      priority,
+      priorityLevel,
+      sortIndex,
+    } = payload?.task;
+
+    const prevDueDate = payload?.task?.prevDueDate ?? getDate();
 
     const data = await Task.updateOne(
       { id },
@@ -132,7 +145,10 @@ const updateTask = async (req, res) => {
           details,
           completed,
           dueDate: new Date(dueDate),
+          prevDueDate: new Date(prevDueDate),
           priority,
+          priorityLevel,
+          sortIndex,
         },
       }
     ).exec();

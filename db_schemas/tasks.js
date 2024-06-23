@@ -8,6 +8,8 @@ const taskSchema = new mongoose.Schema({
   title: { type: String, required: false, default: "" },
   details: { type: String, required: false, default: "" },
   priority: { type: String, required: false, default: "low" },
+  priorityLevel: { type: Number, required: false, default: 1 },
+  sortIndex: { type: Number, required: false, default: 0 },
   tags: [
     {
       id: { type: Number, default: 0 },
@@ -16,6 +18,7 @@ const taskSchema = new mongoose.Schema({
   ],
   createDate: { type: Date, required: false, default: new Date() },
   dueDate: { type: Date, required: false },
+  prevDueDate: { type: Date, required: false },
   dueTime: { type: String, required: false },
   completed: { type: Boolean, required: false, default: false },
   trash: { type: Boolean, required: false, default: false },

@@ -28,14 +28,16 @@ const createNote = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, details } = payload.newNote;
+    let { id, title, details, sortIndex } = payload.newNote;
     const newNote = new Note({
       id,
       userID,
       title,
       details,
+      sortIndex,
       tags: [],
       createDate: new Date(),
+      pinned: false,
       trash: false,
     });
     const data = await newNote.save();
@@ -50,17 +52,20 @@ const editNote = async (req, res) => {
     const action = req?.body?.action;
     const { type, payload } = action;
 
-    let { id, title, details, priority, tags, trash } = payload.newNote;
+    let { id, title, details, priority, tags, trash, sortIndex, pinned } =
+      payload.newNote;
 
     let data = await Note.updateOne(
       { id: id },
       {
         $set: {
-          title: title,
-          details: details,
-          priority: priority,
-          tags: tags,
-          trash: trash,
+          title,
+          details,
+          priority,
+          tags,
+          trash,
+          sortIndex,
+          pinned,
         },
       }
     );

@@ -28,12 +28,10 @@ const createList = async (req, res) => {
     const userName = action?.payload?.userName;
     const { type, payload } = action;
 
-    console.log("List Request:", type);
-
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, icon } = payload.newList;
+    let { id, title, icon, sortIndex } = payload.newList;
     const newTaskList = new TaskList({
       id,
       userID,
@@ -42,6 +40,7 @@ const createList = async (req, res) => {
       createDate: new Date(),
       trash: false,
       tasks: [],
+      sortIndex,
     });
     const data = await newTaskList.save();
     return res.status(200).json({ status: "success", message: "List created" });
@@ -75,8 +74,6 @@ const deleteList = async (req, res) => {
     const userName = action?.payload?.userName;
     const { type, payload } = action;
 
-    console.log("List Request:", type);
-
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
@@ -109,6 +106,13 @@ const handleUpdate = async (listID, updateItem, newValue) => {
         TaskList.updateOne(
           { id: listID },
           { $set: { pinned: newValue } }
+        ).exec();
+        break;
+      }
+      case "list_sortIndex": {
+        TaskList.updateOne(
+          { id: listID },
+          { $set: { sortIndex: newValue } }
         ).exec();
         break;
       }
