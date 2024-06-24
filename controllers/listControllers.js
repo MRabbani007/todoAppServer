@@ -88,6 +88,30 @@ const deleteList = async (req, res) => {
   }
 };
 
+const sortLists = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const { type, payload } = action;
+
+    let lists = payload?.lists;
+
+    const bulkOperations = lists.map(({ id, sortIndex }) => {
+      return {
+        updateOne: {
+          filter: { id },
+          update: { sortIndex },
+        },
+      };
+    });
+
+    const data = await TaskList.bulkWrite(bulkOperations);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    return res.sendStatus(500);
+  }
+};
+
 const handleUpdate = async (listID, updateItem, newValue) => {
   try {
     switch (updateItem) {
@@ -154,4 +178,4 @@ const handleUpdate = async (listID, updateItem, newValue) => {
   }
 };
 
-module.exports = { getLists, createList, updateList, deleteList };
+module.exports = { getLists, createList, updateList, deleteList, sortLists };
