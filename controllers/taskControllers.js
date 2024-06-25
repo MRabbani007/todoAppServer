@@ -173,6 +173,32 @@ const deleteTask = async (req, res) => {
   }
 };
 
+const sortTasks = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const { type, payload } = action;
+
+    let tasks = payload?.tasks;
+    if (!tasks || !tasks?.length || tasks?.length === 0)
+      return res.sendStatus(400);
+
+    const bulkOperations = tasks.map(({ id, sortIndex }) => {
+      return {
+        updateOne: {
+          filter: { id },
+          update: { sortIndex },
+        },
+      };
+    });
+
+    const data = await Task.bulkWrite(bulkOperations);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    return res.sendStatus(500);
+  }
+};
+
 const addTaskTag = async (req, res) => {
   try {
     const action = req?.body?.action;
@@ -364,6 +390,7 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
+  sortTasks,
   getListSummary,
   getTaskSummary,
   addTaskTag,

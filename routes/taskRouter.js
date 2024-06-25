@@ -9,10 +9,13 @@ const {
   updateTaskTag,
   deleteTaskTag,
   getTaskSummary,
+  sortTasks,
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
 taskRouter.route("/main").post(createTask).patch(updateTask).delete(deleteTask);
+
+taskRouter.route("/sort").patch(sortTasks);
 
 taskRouter
   .route("/tag")

@@ -31,6 +31,7 @@ const {
   createNote,
   editNote,
   deleteNote,
+  sortNotes,
 } = require("../controllers/noteControllers");
 
 // Handle user registration and authentication
@@ -49,6 +50,8 @@ router
   .post(createNote)
   .patch(editNote)
   .delete(deleteNote);
+
+router.route("/notes/sort").patch(sortNotes);
 
 router
   .route("/journal")

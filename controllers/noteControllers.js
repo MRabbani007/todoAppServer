@@ -89,6 +89,32 @@ const deleteNote = async (req, res) => {
   }
 };
 
+const sortNotes = async (req, res) => {
+  try {
+    const action = req?.body?.action;
+    const { type, payload } = action;
+
+    let notes = payload?.notes;
+    if (!notes || !notes?.length || notes?.length === 0)
+      return res.sendStatus(400);
+
+    const bulkOperations = notes.map(({ id, sortIndex }) => {
+      return {
+        updateOne: {
+          filter: { id },
+          update: { sortIndex },
+        },
+      };
+    });
+
+    const data = await Note.bulkWrite(bulkOperations);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    return res.sendStatus(500);
+  }
+};
+
 const handleNotesAdmin = async (req, res) => {
   try {
     const action = req?.body?.action;
@@ -162,4 +188,4 @@ const handleNotesAdmin = async (req, res) => {
   }
 };
 
-module.exports = { getNotes, createNote, editNote, deleteNote };
+module.exports = { getNotes, createNote, editNote, deleteNote, sortNotes };
