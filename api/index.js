@@ -35,7 +35,14 @@ app.use(cors(corsOptions));
 app.options("/", cors());
 
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  const origin =
+    req?.headers?.origin === "http://localhost:5173"
+      ? "http://localhost:5173"
+      : req?.headers?.origin === "https://mrabbani007.github.io"
+      ? "https://mrabbani007.github.io"
+      : "http://foo.io";
+
+  res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
