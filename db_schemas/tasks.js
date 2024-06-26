@@ -10,6 +10,7 @@ const taskSchema = new mongoose.Schema({
   priority: { type: String, required: false, default: "low" },
   priorityLevel: { type: Number, required: false, default: 1 },
   sortIndex: { type: Number, required: false, default: 0 },
+  plannerSortIndex: { type: Number, required: false, default: 0 },
   tags: [
     {
       id: { type: Number, default: 0 },
@@ -21,6 +22,7 @@ const taskSchema = new mongoose.Schema({
   prevDueDate: { type: Date, required: false },
   dueTime: { type: String, required: false },
   completed: { type: Boolean, required: false, default: false },
+  status: { type: String, required: false, default: "open" },
   trash: { type: Boolean, required: false, default: false },
   trashDate: { type: Date, required: false },
 });

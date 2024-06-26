@@ -5,13 +5,13 @@ const { getDate } = require("../data/utils");
 
 const getTasks = async (req, res) => {
   try {
-    const { type, payload } = req?.body?.action;
-
-    const userName = payload?.userName;
+    const userName = req?.user?.username;
     if (!userName) return res.sendStatus(400);
 
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
+
+    const type = req?.query?.type || "ALL";
 
     let data = [];
     switch (type) {
@@ -67,7 +67,7 @@ const getTasks = async (req, res) => {
         break;
       }
       case "LIST": {
-        const listID = payload?.listID;
+        const listID = req?.query?.listID;
         data = await Task.find({ userID, listID });
         break;
       }
@@ -83,20 +83,22 @@ const getTasks = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
+    console.log(err);
     res.sendStatus(500);
   }
 };
 
 const createTask = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, listID, title, sortIndex } = payload.newTask;
+    const task = req?.body?.newTask;
+    if (!task?.id) return res.sendStatus(400);
+
+    let { id, listID, title, sortIndex } = task;
     const newTask = new Task({
       id,
       userID: userID,
@@ -129,6 +131,7 @@ const updateTask = async (req, res) => {
       title,
       details,
       completed,
+      status,
       dueDate,
       priority,
       priorityLevel,
@@ -144,6 +147,7 @@ const updateTask = async (req, res) => {
           title,
           details,
           completed,
+          status,
           dueDate: new Date(dueDate),
           prevDueDate: new Date(prevDueDate),
           priority,
@@ -161,9 +165,7 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const id = action?.payload?.id;
-
+    const id = req?.body?.id;
     if (!id) return res.sendStatus(400);
 
     const response = await Task.deleteOne({ id }).exec();
@@ -175,10 +177,7 @@ const deleteTask = async (req, res) => {
 
 const sortTasks = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
-
-    let tasks = payload?.tasks;
+    let tasks = req?.body?.payload;
     if (!tasks || !tasks?.length || tasks?.length === 0)
       return res.sendStatus(400);
 
@@ -199,12 +198,42 @@ const sortTasks = async (req, res) => {
   }
 };
 
+const sortTasksPlanner = async (req, res) => {
+  try {
+    const moveItem = req?.body?.moveItem;
+    const { id, plannerSortIndex, status } = moveItem;
+    const tasks = req?.body?.payload ?? [];
+
+    const itemData = await Task.updateOne(
+      { id },
+      { $set: { plannerSortIndex, status } }
+    );
+
+    // if (!tasks || !tasks?.length) return res.sendStatus(400);
+
+    const bulkOperations = tasks.map(({ id, plannerSortIndex }) => {
+      return {
+        updateOne: {
+          filter: { id },
+          update: { plannerSortIndex },
+        },
+      };
+    });
+
+    const data = await Task.bulkWrite(bulkOperations);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    console.log(err);
+    return res.sendStatus(500);
+  }
+};
+
 const addTaskTag = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const tag = action?.payload?.tag;
-
-    if (!tag?.id) return res.sendStatus(400);
+    const tag = req?.body?.tag;
+    if (!tag?.name)
+      return res.status(400).json({ message: "missing tag details" });
 
     const data = await Task.updateOne(
       { id: tag.taskID },
@@ -220,8 +249,9 @@ const addTaskTag = async (req, res) => {
 
 const updateTaskTag = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
+    const tag = req?.body?.tag;
+    if (!tag?._id)
+      return res.status(400).json({ message: "missing tag details" });
 
     let { _id, name, taskID } = payload.tag;
 
@@ -239,8 +269,11 @@ const updateTaskTag = async (req, res) => {
 
 const deleteTaskTag = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    let { _id, taskID, name } = action?.payload?.tag;
+    const tag = req?.body?.tag;
+    if (!tag?._id)
+      return res.status(400).json({ message: "missing tag details" });
+
+    let { _id, taskID, name } = tag;
 
     const data = await Task.updateOne(
       { id: taskID },
@@ -257,9 +290,8 @@ const deleteTaskTag = async (req, res) => {
 // Get count of tasks (Total & Open) for each list
 const getListSummary = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
+    if (!userName) return res.sendStatus(400);
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
@@ -290,9 +322,7 @@ const getListSummary = async (req, res) => {
 
 const getTaskSummary = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(400);
@@ -391,6 +421,7 @@ module.exports = {
   updateTask,
   deleteTask,
   sortTasks,
+  sortTasksPlanner,
   getListSummary,
   getTaskSummary,
   addTaskTag,

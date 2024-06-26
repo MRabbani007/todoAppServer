@@ -11,6 +11,7 @@ const {
   handleUserPassword,
 } = require("../controllers/userControllers");
 const User = require("../db_schemas/user");
+const verifyJWT = require("../middleware/verifyJWT");
 const userRouter = express();
 
 // Signup Request
@@ -25,7 +26,8 @@ userRouter.post("/logout", handleSignOut);
 // Refresh Access Token
 userRouter.get("/refresh", handleRefreshToken);
 
-userRouter.route("/admin").post(verifyRoles(5150), handleGetUsers);
+// userRouter.route("/admin").post(verifyRoles(5150), handleGetUsers);
+userRouter.use(verifyJWT);
 
 userRouter
   .route("/settings")

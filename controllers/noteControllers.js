@@ -4,7 +4,8 @@ const { getUserID } = require("./userControllers");
 
 const getNotes = async (req, res) => {
   try {
-    const userName = req?.query?.userName;
+    const userName = req?.user?.username;
+
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
@@ -21,14 +22,13 @@ const getNotes = async (req, res) => {
 
 const createNote = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.userName;
+    const note = req?.body?.newNote;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, details, sortIndex } = payload.newNote;
+    let { id, title, details, sortIndex } = note;
     const newNote = new Note({
       id,
       userID,
@@ -49,11 +49,10 @@ const createNote = async (req, res) => {
 
 const editNote = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
+    const newNote = req?.body?.newNote;
 
     let { id, title, details, priority, tags, trash, sortIndex, pinned } =
-      payload.newNote;
+      newNote;
 
     let data = await Note.updateOne(
       { id: id },
@@ -66,6 +65,7 @@ const editNote = async (req, res) => {
           trash,
           sortIndex,
           pinned,
+          updateDate: new Date(),
         },
       }
     );
@@ -77,8 +77,7 @@ const editNote = async (req, res) => {
 
 const deleteNote = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
+    const id = req?.body?.id;
 
     const data = await Note.deleteOne({
       id: payload.noteID,

@@ -8,6 +8,7 @@ const listSchema = new mongoose.Schema({
   status: { type: String, required: false, default: "" },
   type: { type: String, required: false, default: "" },
   createDate: { type: Date, required: false, default: new Date() },
+  updateDate: { type: Date, required: false, default: new Date() },
   icon: { type: String, required: false, default: "" },
   tasks: { type: [String], required: false },
   pinned: { type: Boolean, required: false, default: false },

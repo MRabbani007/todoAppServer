@@ -4,9 +4,7 @@ const { getUserID } = require("./userControllers");
 
 const getLists = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
@@ -24,20 +22,20 @@ const getLists = async (req, res) => {
 
 const createList = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
+    const list = req?.body?.payload;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, icon, sortIndex } = payload.newList;
+    let { id, title, icon, sortIndex } = list;
     const newTaskList = new TaskList({
       id,
       userID,
       title,
       icon,
       createDate: new Date(),
+      updateDate: new Date(),
       trash: false,
       tasks: [],
       sortIndex,
@@ -52,12 +50,7 @@ const createList = async (req, res) => {
 
 const updateList = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
-
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
+    const { type, payload } = req?.body;
 
     let { listID, updateItem, newValue } = payload;
     const data = await handleUpdate(listID, updateItem, newValue);
@@ -70,18 +63,10 @@ const updateList = async (req, res) => {
 
 const deleteList = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const id = req?.body?.id;
 
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const data = await TaskList.deleteOne({
-      userID: userID,
-      id: payload.listID,
-    }).exec();
-    return res.status(204).json({ status: "success", message: "List removed" });
+    const data = await TaskList.deleteOne({ id }).exec();
+    return res.status(204).json({ message: "List deleted" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ status: "error", message: "Server Error" });
@@ -90,10 +75,7 @@ const deleteList = async (req, res) => {
 
 const sortLists = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
-
-    let lists = payload?.lists;
+    let lists = req?.user?.lists;
 
     const bulkOperations = lists.map(({ id, sortIndex }) => {
       return {

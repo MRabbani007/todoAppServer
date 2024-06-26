@@ -10,12 +10,19 @@ const {
   deleteTaskTag,
   getTaskSummary,
   sortTasks,
+  sortTasksPlanner,
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
-taskRouter.route("/main").post(createTask).patch(updateTask).delete(deleteTask);
+taskRouter
+  .route("/main")
+  .get(getTasks)
+  .post(createTask)
+  .patch(updateTask)
+  .delete(deleteTask);
 
 taskRouter.route("/sort").patch(sortTasks);
+taskRouter.route("/sortPlanner").patch(sortTasksPlanner);
 
 taskRouter
   .route("/tag")
@@ -23,7 +30,6 @@ taskRouter
   .patch(updateTaskTag)
   .delete(deleteTaskTag);
 
-taskRouter.route("/get").post(getTasks);
-taskRouter.route("/summary").post(getTaskSummary);
+taskRouter.route("/summary").get(getTaskSummary);
 
 module.exports = taskRouter;

@@ -3,7 +3,7 @@ const { getUserID } = require("./userControllers");
 
 const getJournal = async (req, res) => {
   try {
-    const userName = req?.query?.userName;
+    const userName = req?.user?.username;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
@@ -21,14 +21,13 @@ const getJournal = async (req, res) => {
 
 const createJournal = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const userName = req?.user?.username;
+    const journal = req?.body?.payload;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, detail, color, planDate, onDate } = payload.journal;
+    let { id, title, detail, color, planDate, onDate } = journal;
     const newJournal = new Journal({
       id,
       userID,
@@ -50,14 +49,12 @@ const createJournal = async (req, res) => {
 
 const updateJournal = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const journal = req?.body?.payload;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const { id, title, detail, onDate, color } = payload.journal;
+    const { id, title, detail, onDate, color } = journal;
 
     const data = await Journal.updateOne(
       { id },
@@ -79,16 +76,9 @@ const updateJournal = async (req, res) => {
 
 const deleteJournal = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const userName = action?.payload?.userName;
-    const { type, payload } = action;
+    const id = req?.body?.payload;
 
-    let userID = await getUserID(userName);
-    if (!userID) return res.sendStatus(401);
-
-    const response = await Journal.deleteOne({
-      id: payload?.journal?.id,
-    }).exec();
+    const response = await Journal.deleteOne({ id }).exec();
     return res.sendStatus(204);
   } catch (err) {
     res.sendStatus(500);

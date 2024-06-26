@@ -11,6 +11,7 @@ const noteSchema = new mongoose.Schema({
   sortIndex: { type: Number, required: false, default: 0 },
   tags: { type: [String], required: false },
   createDate: { type: Date, required: false, default: new Date() },
+  updateDate: { type: Date, required: false, default: new Date() },
   dueDate: { type: Date, required: false },
   trash: { type: Boolean, required: false, default: false },
   trashDate: { type: Date, required: false },

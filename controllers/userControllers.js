@@ -88,7 +88,7 @@ const handleSignIn = async (req, res) => {
           if (match) {
             const roles = Object.values(foundUser.roles).filter(Boolean);
             const accessToken = jwt.sign(
-              { UserInfo: { username: foundUser.username, roles: roles } },
+              { username: foundUser.username, roles: roles },
               process.env.ACCESS_TOKEN_SECRET,
               { expiresIn: "1h" }
             );
@@ -146,8 +146,10 @@ const handleRefreshToken = async (req, res) => {
           refreshToken: refreshToken,
         })
         .exec();
+      // console.log("Refresh Token", refreshToken);
+      // console.log("found user", foundUser);
       if (!foundUser) {
-        console.log("handleRefreshToken: user not found");
+        // console.log("handleRefreshToken: user not found");
         return res.sendStatus(403); // forbiden
       } else {
         // evaluate JWT
@@ -161,10 +163,8 @@ const handleRefreshToken = async (req, res) => {
               const roles = Object.values(foundUser.roles);
               const accessToken = jwt.sign(
                 {
-                  UserInfo: {
-                    username: decoded.username,
-                    roles: roles,
-                  },
+                  username: decoded.username,
+                  roles: roles,
                 },
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: "10m" }

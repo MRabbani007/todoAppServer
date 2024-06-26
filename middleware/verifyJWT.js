@@ -7,14 +7,18 @@ const verifyJWT = (req, res, next) => {
     // console.log("Failed: No JWT header");
     return res.sendStatus(401); // unauthorized
   }
-  // console.log(authHeader);
   const token = authHeader.split(" ")[1];
+  // const token = req.cookies.jwt;
+  // if (!token) return res.sendStatus(401);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
     if (error) {
       // console.log("Failed: JWT fail");
       return res.sendStatus(403);
     } // forbiden: invalid Token
-    req.user = decoded.username;
+    req.user = {
+      username: decoded?.username || null,
+      roles: decoded?.roles || [],
+    };
     // console.log("JWT Passed");
     next();
   });

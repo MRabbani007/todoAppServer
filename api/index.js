@@ -32,24 +32,25 @@ app.use(credentials);
 // Cross Origin Resource Sharing
 app.use(cors(corsOptions));
 
-// app.use(function (req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Content-Type, Authorization, Content-Length, X-Requested-With"
-//   );
-//   console.log("here");
-//   //intercepts OPTIONS method
-//   if ("OPTIONS" === req.method) {
-//     console.log("options method");
-//     //respond with 200
-//     return res.sendStatus(200);
-//   } else {
-//     //move on
-//     next();
-//   }
-// });
+app.options("/", cors());
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Content-Length, X-Requested-With"
+  );
+  //intercepts OPTIONS method
+  if ("OPTIONS" === req.method) {
+    console.log("options method");
+    //respond with 200
+    return res.sendStatus(200);
+  } else {
+    //move on
+    next();
+  }
+});
 
 // app.options("/*", function (req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "*");
