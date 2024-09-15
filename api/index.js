@@ -1,14 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const credentials = require("../middleware/credentials");
-const corsOptions = require("../config/corsOptions");
-const { logger } = require("../middleware/logEvents");
 const cookieParser = require("cookie-parser");
-
 const path = require("path");
-require("dotenv").config({ path: path.resolve(`${__dirname}/config/.env`) });
+
+const corsOptions = require("../config/corsOptions");
+const credentials = require("../middleware/credentials");
+const { logger } = require("../middleware/logEvents");
 const errorHandler = require("../middleware/errorHandler");
+const { corsHandler } = require("../middleware/corsMiddleware");
+
+require("dotenv").config({ path: path.resolve(`${__dirname}/config/.env`) });
 
 const app = express();
 
@@ -34,30 +36,7 @@ app.use(cors(corsOptions));
 
 app.options("/", cors());
 
-app.use(function (req, res, next) {
-  const origin =
-    req?.headers?.origin === "http://localhost:5173"
-      ? "http://localhost:5173"
-      : req?.headers?.origin === "https://mrabbani007.github.io"
-      ? "https://mrabbani007.github.io"
-      : "http://foo.io";
-
-  res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Content-Length, X-Requested-With"
-  );
-  //intercepts OPTIONS method
-  if ("OPTIONS" === req.method) {
-    console.log("options method");
-    //respond with 200
-    return res.sendStatus(200);
-  } else {
-    //move on
-    next();
-  }
-});
+app.use(corsHandler);
 
 // app.options("/*", function (req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "*");

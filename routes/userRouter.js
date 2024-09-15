@@ -26,8 +26,8 @@ userRouter.post("/logout", handleSignOut);
 // Refresh Access Token
 userRouter.get("/refresh", handleRefreshToken);
 
-// userRouter.route("/admin").post(verifyRoles(5150), handleGetUsers);
 userRouter.use(verifyJWT);
+userRouter.route("/admin").get(verifyRoles(5150), handleGetUsers);
 
 userRouter
   .route("/settings")

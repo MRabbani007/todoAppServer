@@ -6,7 +6,7 @@ const { getDate } = require("../data/utils");
 const getTasks = async (req, res) => {
   try {
     const userName = req?.user?.username;
-    if (!userName) return res.sendStatus(400);
+    if (!userName) return res.sendStatus(401);
 
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
@@ -16,7 +16,10 @@ const getTasks = async (req, res) => {
     let data = [];
     switch (type) {
       case "ALL": {
-        data = await Task.find({ userID });
+        data = await Task.find({ userID }).sort({
+          // dueDate: 1,
+          updatedAt: -1,
+        });
         break;
       }
       case "TODAY": {
@@ -68,7 +71,10 @@ const getTasks = async (req, res) => {
       }
       case "LIST": {
         const listID = req?.query?.listID;
-        data = await Task.find({ userID, listID });
+        data = await Task.find({ userID, listID }).sort({
+          // dueDate: 1,
+          updatedAt: -1,
+        });
         break;
       }
       default: {
@@ -83,7 +89,6 @@ const getTasks = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -123,11 +128,11 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
+    const task = req?.body?.task;
 
     const {
       id,
+      listID,
       title,
       details,
       completed,
@@ -136,9 +141,9 @@ const updateTask = async (req, res) => {
       priority,
       priorityLevel,
       sortIndex,
-    } = payload?.task;
+    } = task;
 
-    const prevDueDate = payload?.task?.prevDueDate ?? getDate();
+    // const prevDueDate = task?.prevDueDate ?? getDate();
 
     const data = await Task.updateOne(
       { id },
@@ -146,10 +151,11 @@ const updateTask = async (req, res) => {
         $set: {
           title,
           details,
+          listID,
           completed,
           status,
           dueDate: new Date(dueDate),
-          prevDueDate: new Date(prevDueDate),
+          // prevDueDate: new Date(prevDueDate),
           priority,
           priorityLevel,
           sortIndex,
@@ -157,8 +163,8 @@ const updateTask = async (req, res) => {
       }
     ).exec();
 
-    return res.status(204);
-  } catch (err) {
+    return res.sendStatus(204);
+  } catch (error) {
     return res.sendStatus(500);
   }
 };
