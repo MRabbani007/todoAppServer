@@ -18,10 +18,10 @@ const Main = async () => {
       // useUnifiedTopology: true,
     })
     .then((dbo) => {
-      console.log("mongodb connected");
+      // console.log("mongodb connected");
     })
     .catch(() => {
-      console.log("Mongo.js: failed");
+      // console.log("Mongo.js: failed");
     });
 };
 

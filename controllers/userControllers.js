@@ -8,11 +8,8 @@ const handleSignUp = async (req, res) => {
     // get username and password from client
     let { username, password } = req.body.payload;
     if (!username || !password) {
-      console.log("Signup Request: Missing Credentials");
       res.status(400).json({ message: "Username and Password are required" });
     } else {
-      console.log("Signup Request", username, password);
-
       const duplicate = await user.findOne({ username: username }).exec();
       // check if already registered
       if (duplicate) {
@@ -146,10 +143,7 @@ const handleRefreshToken = async (req, res) => {
           refreshToken: refreshToken,
         })
         .exec();
-      // console.log("Refresh Token", refreshToken);
-      // console.log("found user", foundUser);
       if (!foundUser) {
-        // console.log("handleRefreshToken: user not found");
         return res.sendStatus(403); // forbiden
       } else {
         // evaluate JWT
@@ -240,7 +234,6 @@ const handleUserPassword = async (req, res) => {
     let { type, payload } = req.body.action;
     let { username, password, newPassword } = payload;
     if (!username || !password || !newPassword) {
-      console.log("Change Password Request: Missing Credentials");
       return res
         .status(400)
         .json({ message: "Username and Password are required" });
@@ -268,7 +261,6 @@ const handleUserPassword = async (req, res) => {
             .status(200)
             .json({ status: "success", message: "changed" });
         } else {
-          console.log(error);
           return res.status(400).json({ message: "Wrong Password" });
         }
       }
@@ -286,9 +278,7 @@ const getUserID = async (username) => {
     } else {
       return null;
     }
-  } catch (error) {
-    console.log("Error: get user ID");
-  }
+  } catch (error) {}
 };
 
 // Get user details for admin
@@ -331,7 +321,6 @@ const handleUserEditSettings = async (req, res) => {
   try {
     const action = req?.body?.action;
     const { type, payload } = action;
-    console.log(action);
     switch (type) {
       case "EDIT_NAME": {
         if (!payload?.name) {
@@ -399,7 +388,6 @@ const handleUserEditSettings = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
     res.sendStatus(500);
   }
 };

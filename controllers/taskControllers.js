@@ -11,82 +11,64 @@ const getTasks = async (req, res) => {
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const type = req?.query?.type || "ALL";
-
     let data = [];
-    switch (type) {
-      case "ALL": {
-        data = await Task.find({ userID }).sort({
-          // dueDate: 1,
-          updatedAt: -1,
-        });
-        break;
-      }
-      case "TODAY": {
-        const day = getDate(); //payload?.day ||
+    let count = 0;
 
-        data = await Task.find({
-          userID: userID,
-          completed: false,
-          dueDate: {
-            $gte: new Date(day),
-            $lte: new Date(day),
-          },
-        });
+    const type = req?.query?.type || "ALL";
+    const completed = req?.query?.comp ?? false;
+    const page = req?.query?.page ?? 1;
 
-        break;
-      }
-      case "WEEK": {
-        const day = getDate(1);
-        const offset = getDate(7);
-        data = await Task.find({
-          userID: userID,
-          completed: false,
-          dueDate: {
-            $gte: new Date(day),
-            $lte: new Date(offset),
-          },
-        });
-        break;
-      }
-      case "OVERDUE": {
-        const offset = getDate(-1);
-        data = await Task.find({
-          userID: userID,
-          completed: false,
-          dueDate: {
-            $gte: new Date("2000-01-01"),
-            $lte: new Date(offset),
-          },
-        });
-        break;
-      }
-      case "IMPORTANT": {
-        data = await Task.find({
-          userID: userID,
-          completed: false,
-          priority: { $in: ["high", "important"] },
-        });
-        break;
-      }
-      case "LIST": {
-        const listID = req?.query?.listID;
-        data = await Task.find({ userID, listID }).sort({
-          // dueDate: 1,
-          updatedAt: -1,
-        });
-        break;
-      }
-      default: {
-        data = [];
+    const filters = { userID };
+    if (completed === false) {
+      filters.completed = false;
+    }
+    if (type === "TODAY") {
+      const day = getDate();
+      filters.dueDate = {
+        $gte: new Date(day),
+        $lte: new Date(day),
+      };
+    }
+    if (type === "WEEK") {
+      const day = getDate(1);
+      const offset = getDate(7);
+      filters.dueDate = {
+        $gte: new Date(day),
+        $lte: new Date(offset),
+      };
+    }
+    if (type === "OVERDUE") {
+      const day = getDate(1);
+      const offset = getDate(-1);
+      filters.dueDate = {
+        $gte: new Date("2000-01-01"),
+        $lte: new Date(offset),
+      };
+    }
+    if (type === "IMPORTANT") {
+      filters.priority = { $in: ["high", "important"] };
+    }
+    if (type === "LIST") {
+      const listID = req?.query?.listID;
+      if (listID) {
+        filters.listID = listID;
       }
     }
+
+    data = await Task.find(filters)
+      .sort({
+        updatedAt: -1,
+      })
+      .limit(10)
+      .skip(10 * (page - 1));
+
+    count = await Task.countDocuments(filters);
     // const listID = "task_list";
 
     if (!data) {
       return res.status(200).json([]);
     } else {
-      return res.status(200).json(data);
+      return res.status(200).json({ data, count });
     }
   } catch (err) {
     res.sendStatus(500);
@@ -103,13 +85,13 @@ const createTask = async (req, res) => {
     const task = req?.body?.newTask;
     if (!task?.id) return res.sendStatus(400);
 
-    let { id, listID, title, sortIndex } = task;
+    let { id, listID, title, details, sortIndex } = task;
     const newTask = new Task({
       id,
-      userID: userID,
+      userID,
       listID,
       title,
-      details: "",
+      details,
       priority: "low",
       priorityLevel: 1,
       sortIndex,
@@ -143,8 +125,6 @@ const updateTask = async (req, res) => {
       sortIndex,
     } = task;
 
-    // const prevDueDate = task?.prevDueDate ?? getDate();
-
     const data = await Task.updateOne(
       { id },
       {
@@ -155,13 +135,12 @@ const updateTask = async (req, res) => {
           completed,
           status,
           dueDate: new Date(dueDate),
-          // prevDueDate: new Date(prevDueDate),
           priority,
           priorityLevel,
           sortIndex,
         },
       }
-    ).exec();
+    );
 
     return res.sendStatus(204);
   } catch (error) {
@@ -230,7 +209,6 @@ const sortTasksPlanner = async (req, res) => {
 
     return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
     return res.sendStatus(500);
   }
 };
@@ -248,7 +226,6 @@ const addTaskTag = async (req, res) => {
 
     return res.status(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -268,7 +245,6 @@ const updateTaskTag = async (req, res) => {
 
     return res.status(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -288,7 +264,6 @@ const deleteTaskTag = async (req, res) => {
 
     return res.status(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -416,7 +391,6 @@ const getTaskSummary = async (req, res) => {
     ]);
     return res.status(200).json(data[0]);
   } catch (err) {
-    console.log(err);
     return res.sendStatus(500);
   }
 };

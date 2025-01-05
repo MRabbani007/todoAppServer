@@ -124,7 +124,6 @@ const handleNotesAdmin = async (req, res) => {
     let userID = await getUserID(user);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Request Notes:", type);
     switch (type) {
       case ACTIONS.NOTES_GET_ALL: {
         const data = await Note.find({});
@@ -182,7 +181,6 @@ const handleNotesAdmin = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ status: "error", message: "Server Error" });
   }
 };

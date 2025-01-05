@@ -31,12 +31,13 @@ const createList = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, icon, sortIndex } = list;
+    let { id, title, subTitle, detail, icon, sortIndex } = list;
     const newTaskList = new TaskList({
       id,
       userID,
       title,
       subTitle,
+      detail,
       icon,
       trash: false,
       sortIndex,

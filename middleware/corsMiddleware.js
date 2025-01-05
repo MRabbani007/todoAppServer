@@ -16,7 +16,6 @@ function corsHandler(req, res, next) {
   );
   //intercepts OPTIONS method
   if ("OPTIONS" === req.method) {
-    console.log("options method");
     //respond with 200
     return res.sendStatus(200);
   } else {

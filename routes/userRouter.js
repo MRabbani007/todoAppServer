@@ -37,7 +37,6 @@ userRouter
 userRouter.route("/pwd").post(verifyRoles(2001), handleUserPassword);
 
 userRouter.get("/*", async (req, res) => {
-  // console.log(req.params.name);
   const data = await User.find({});
   res.json("Server Running");
 });

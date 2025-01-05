@@ -12,14 +12,12 @@ const verifyJWT = (req, res, next) => {
   // if (!token) return res.sendStatus(401);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
     if (error) {
-      // console.log("Failed: JWT fail");
       return res.sendStatus(403);
     } // forbiden: invalid Token
     req.user = {
       username: decoded?.username || null,
       roles: decoded?.roles || [],
     };
-    // console.log("JWT Passed");
     next();
   });
 };

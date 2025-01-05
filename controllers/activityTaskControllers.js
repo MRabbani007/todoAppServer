@@ -39,10 +39,8 @@ const createActivityTask = async (req, res) => {
       createDate: new Date(),
     });
     const data = await newActivityTask.save();
-    console.log(data);
     return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };

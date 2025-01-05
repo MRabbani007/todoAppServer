@@ -46,8 +46,6 @@ app.use(corsHandler);
 //     "Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild"
 //   );
 
-//   console.log("set headers");
-
 //   res.sendStatus(200);
 // });
 

@@ -44,7 +44,6 @@ const createActivity = async (req, res) => {
       createDate: new Date(),
     });
     const data = await newActivity.save();
-    console.log(data);
     return res.sendStatus(204);
   } catch (err) {
     res.sendStatus(500);

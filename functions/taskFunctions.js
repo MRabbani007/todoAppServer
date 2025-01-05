@@ -159,7 +159,6 @@ const getTasksWeek = async (userID, day, offset) => {
 const fixdate = async () => {
   try {
     Task.updateMany({}, { $set: { dueDate: new Date("1900-01-01") } }).exec();
-    console.log("done");
   } catch (error) {}
 };
 

@@ -32,8 +32,6 @@ const getTagsTask = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Tag Request:", type);
-
     const data = await Tag.find({ taskID });
     if (!data) {
       return res.status(200).json([]);
@@ -41,7 +39,6 @@ const getTagsTask = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -67,7 +64,6 @@ const createTag = async (req, res) => {
     const data = await newTag.save();
     return res.status(200).json({ status: "success", message: "Tag created" });
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -81,8 +77,6 @@ const updateTag = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Tag Request:", type);
-
     const data = await Tag.updateOne(
       { id: payload?.tag?.id },
       {
@@ -94,7 +88,6 @@ const updateTag = async (req, res) => {
 
     return res.status(204).json({ status: "success", message: "Tag updated" });
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
@@ -108,14 +101,11 @@ const deleteTag = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    console.log("Task Request:", type);
-
     const response = await Tag.deleteOne({
       id: payload?.tag?.id,
     }).exec();
     return res.status(204).json({ status: "success", message: "Tag removed" });
   } catch (err) {
-    console.log(err);
     res.sendStatus(500);
   }
 };
