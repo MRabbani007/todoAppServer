@@ -52,9 +52,8 @@ const handleSignUp = async (req, res) => {
 const handleSignIn = async (req, res) => {
   try {
     // get username and password from client
-    const payload = req.body.payload;
-    let username = payload?.username;
-    let password = payload?.password;
+    let username = req.body?.username;
+    let password = req.body?.password;
 
     if (!username || !password) {
       return res.status(400).json({

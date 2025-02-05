@@ -55,12 +55,14 @@ const getTasks = async (req, res) => {
       }
     }
 
+    const itemsPerPage = type === "PLANNER" ? 300 : 10;
+
     data = await Task.find(filters)
       .sort({
         updatedAt: -1,
       })
-      .limit(10)
-      .skip(10 * (page - 1));
+      .limit(itemsPerPage)
+      .skip(itemsPerPage * (page - 1));
 
     count = await Task.countDocuments(filters);
     // const listID = "task_list";

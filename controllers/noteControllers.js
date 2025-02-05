@@ -22,27 +22,29 @@ const getNotes = async (req, res) => {
 
 const createNote = async (req, res) => {
   try {
-    const userName = req?.user?.userName;
+    const userName = req?.user?.username;
     const note = req?.body?.newNote;
 
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    let { id, title, details, sortIndex } = note;
+    let { title, details, sortIndex } = note;
+
     const newNote = new Note({
-      id,
+      id: crypto.randomUUID(),
       userID,
       title,
       details,
       sortIndex,
       tags: [],
-      createDate: new Date(),
       pinned: false,
       trash: false,
     });
+
     const data = await newNote.save();
     return res.sendStatus(204);
   } catch (err) {
+    console.log(err);
     return res.sendStatus(500);
   }
 };
@@ -55,7 +57,7 @@ const editNote = async (req, res) => {
       newNote;
 
     let data = await Note.updateOne(
-      { id: id },
+      { id },
       {
         $set: {
           title,

@@ -53,9 +53,9 @@ const createList = async (req, res) => {
 
 const updateList = async (req, res) => {
   try {
-    const payload = req?.body?.taskList;
+    const taskList = req?.body?.taskList;
 
-    let { id, title, subTitle, icon, pinned, sortIndex, trash } = payload;
+    let { id, title, subTitle, icon, pinned, sortIndex, trash } = taskList;
 
     const data = await TaskList.updateOne(
       { id },
