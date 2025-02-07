@@ -44,7 +44,6 @@ const createNote = async (req, res) => {
     const data = await newNote.save();
     return res.sendStatus(204);
   } catch (err) {
-    console.log(err);
     return res.sendStatus(500);
   }
 };

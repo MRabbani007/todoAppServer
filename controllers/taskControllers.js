@@ -17,11 +17,13 @@ const getTasks = async (req, res) => {
     const type = req?.query?.type || "ALL";
     const completed = req?.query?.comp ?? false;
     const page = req?.query?.page ?? 1;
+    const ipp = req?.query?.ipp ?? 10;
 
     const filters = { userID };
-    if (completed === false) {
+    if (completed !== "true") {
       filters.completed = false;
     }
+
     if (type === "TODAY") {
       const day = getDate();
       filters.dueDate = {
@@ -55,7 +57,7 @@ const getTasks = async (req, res) => {
       }
     }
 
-    const itemsPerPage = type === "PLANNER" ? 300 : 10;
+    const itemsPerPage = type === "PLANNER" ? 300 : ipp;
 
     data = await Task.find(filters)
       .sort({
@@ -67,11 +69,7 @@ const getTasks = async (req, res) => {
     count = await Task.countDocuments(filters);
     // const listID = "task_list";
 
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json({ data, count });
-    }
+    return res.status(200).json({ data, count });
   } catch (err) {
     res.sendStatus(500);
   }

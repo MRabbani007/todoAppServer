@@ -60,70 +60,70 @@ const handleSignIn = async (req, res) => {
         status: "failed",
         message: "Username and Password are required",
       });
-    } else {
-      let foundUser = await user.findOne({ username: username });
-      if (!foundUser) {
-        return res
-          .status(401)
-          .json({ status: "failed", message: "wrong details" });
-      } else {
-        if (foundUser.username === username) {
-          let match = {};
-          const bcryptCompare = async () => {
-            return bcrypt.compare(password, foundUser.password);
-          };
-
-          // Temporary check if password encrypted
-          if (foundUser.password.length < 10) {
-            match = foundUser.password === password;
-          } else {
-            // encrypt password
-            match = await bcryptCompare();
-          }
-
-          if (match) {
-            const roles = Object.values(foundUser.roles).filter(Boolean);
-            const accessToken = jwt.sign(
-              { username: foundUser.username, roles: roles },
-              process.env.ACCESS_TOKEN_SECRET,
-              { expiresIn: "1h" }
-            );
-            const refreshToken = jwt.sign(
-              { username: foundUser.username },
-              process.env.REFRESH_TOKEN_SECRET,
-              { expiresIn: "1d" }
-            );
-
-            // Saving refreshToken with current user
-            foundUser.refreshToken = refreshToken;
-            const result = await foundUser.save();
-
-            res.cookie("jwt", refreshToken, {
-              httpOnly: true,
-              sameSite: "None",
-              secure: true,
-              maxAge: 24 * 60 * 60 * 1000,
-            });
-
-            return res.status(202).json({
-              status: "success",
-              message: "signin successful",
-              user: foundUser.username,
-              roles,
-              accessToken,
-            });
-          } else {
-            return res
-              .status(401)
-              .json({ status: "failed", message: "wrong password" });
-          }
-        } else {
-          return res
-            .status(401)
-            .json({ status: "failed", message: "wrong password" });
-        }
-      }
     }
+
+    let foundUser = await user.findOne({ username: username });
+    if (!foundUser) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "wrong details" });
+    }
+
+    if (foundUser.username !== username) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "wrong username" });
+    }
+
+    let match = {};
+    const bcryptCompare = async () => {
+      return bcrypt.compare(password, foundUser.password);
+    };
+
+    // Temporary check if password encrypted
+    if (foundUser.password.length < 10) {
+      match = foundUser.password === password;
+    } else {
+      // encrypt password
+      match = await bcryptCompare();
+    }
+
+    if (!match) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "wrong password" });
+    }
+
+    const roles = Object.values(foundUser.roles).filter(Boolean);
+    const accessToken = jwt.sign(
+      { username: foundUser.username, roles: roles },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1h" }
+    );
+    const refreshToken = jwt.sign(
+      { username: foundUser.username },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Saving refreshToken with current user
+    foundUser.refreshToken = refreshToken;
+    const result = await foundUser.save();
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(202).json({
+      status: "success",
+      message: "signin successful",
+      user: foundUser.username,
+      roles,
+      accessToken,
+    });
   } catch (error) {
     return res.sendStatus(500);
   }
