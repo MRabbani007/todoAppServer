@@ -123,6 +123,9 @@ const updateTask = async (req, res) => {
       priority,
       priorityLevel,
       sortIndex,
+      color,
+      link,
+      linkText,
     } = task;
 
     const data = await Task.updateOne(
@@ -138,6 +141,9 @@ const updateTask = async (req, res) => {
           priority,
           priorityLevel,
           sortIndex,
+          color,
+          link,
+          linkText,
         },
       }
     );

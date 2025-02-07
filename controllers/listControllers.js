@@ -55,12 +55,13 @@ const updateList = async (req, res) => {
   try {
     const taskList = req?.body?.taskList;
 
-    let { id, title, subTitle, icon, pinned, sortIndex, trash } = taskList;
+    let { id, title, subTitle, detail, icon, pinned, sortIndex, trash } =
+      taskList;
 
     const data = await TaskList.updateOne(
       { id },
-      { $set: { title, subTitle, icon, pinned, sortIndex, trash } }
-    ).exec();
+      { $set: { title, subTitle, detail, icon, pinned, sortIndex, trash } }
+    );
 
     return res.sendStatus(204);
   } catch (error) {
@@ -70,9 +71,16 @@ const updateList = async (req, res) => {
 
 const deleteList = async (req, res) => {
   try {
-    const id = req?.body?.id;
+    const userName = req?.user?.username;
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
 
-    const data = await TaskList.deleteOne({ id }).exec();
+    const id = req?.body?.id;
+    if (!id) {
+      return res.sendStatus(400);
+    }
+
+    const data = await TaskList.deleteOne({ id, userID });
 
     return res.status(204);
   } catch (error) {

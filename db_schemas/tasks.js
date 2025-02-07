@@ -22,6 +22,9 @@ const taskSchema = new mongoose.Schema(
         name: { type: String, required: false, default: "" },
       },
     ],
+    color: { type: String, required: false, default: "" },
+    link: { type: String, required: false, default: "" },
+    linkText: { type: String, required: false, default: "" },
 
     createDate: { type: Date, required: false, default: new Date() },
     dueDate: { type: Date, required: false },
