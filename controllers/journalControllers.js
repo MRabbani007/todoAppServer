@@ -15,7 +15,7 @@ const getJournal = async (req, res) => {
       return res.status(200).json(data);
     }
   } catch (err) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
@@ -43,12 +43,13 @@ const createJournal = async (req, res) => {
     const data = await newJournal.save();
     return res.sendStatus(204);
   } catch (err) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
 const updateJournal = async (req, res) => {
   try {
+    const userName = req?.user?.username;
     const journal = req?.body?.payload;
 
     let userID = await getUserID(userName);
@@ -70,7 +71,7 @@ const updateJournal = async (req, res) => {
 
     return res.sendStatus(204);
   } catch (err) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
@@ -81,7 +82,7 @@ const deleteJournal = async (req, res) => {
     const response = await Journal.deleteOne({ id }).exec();
     return res.sendStatus(204);
   } catch (err) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
