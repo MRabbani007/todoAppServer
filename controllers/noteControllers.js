@@ -9,12 +9,11 @@ const getNotes = async (req, res) => {
     const userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const data = await Note.find({ userID: userID });
-    if (!data) {
-      return res.status(200).json([]);
-    } else {
-      return res.status(200).json(data);
-    }
+    const data = await Note.find({ userID }).sort({
+      updatedAt: -1,
+    });
+
+    return res.status(200).json(data);
   } catch (err) {
     return res.sendStatus(500);
   }
@@ -81,8 +80,9 @@ const deleteNote = async (req, res) => {
     const id = req?.body?.id;
 
     const data = await Note.deleteOne({
-      id: payload.noteID,
-    }).exec();
+      id,
+    });
+
     return res.sendStatus(204);
   } catch (err) {
     return res.sendStatus(500);

@@ -85,23 +85,34 @@ const createTask = async (req, res) => {
     const task = req?.body?.newTask;
     if (!task?.id) return res.sendStatus(400);
 
-    let { id, listID, title, details, sortIndex } = task;
+    let {
+      id,
+      listID,
+      title,
+      details,
+      note,
+      sortIndex,
+      priority,
+      priorityLevel,
+    } = task;
+
     const newTask = new Task({
       id,
       userID,
       listID,
       title,
       details,
-      priority: "low",
-      priorityLevel: 1,
+      note,
+      priority: priority ?? "low",
+      priorityLevel: priorityLevel ?? 1,
       sortIndex,
       tags: [],
-      createDate: new Date(),
       dueDate: new Date(),
       dueTime: "",
       completed: false,
     });
     const data = await newTask.save();
+
     return res.status(200).json({ status: "success", message: "List created" });
   } catch (err) {
     return res.sendStatus(500);
@@ -110,13 +121,20 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
+    const userName = req?.user?.username;
+
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
     const task = req?.body?.task;
+    if (!task?.id) return res.sendStatus(400);
 
     const {
       id,
       listID,
       title,
       details,
+      note,
       completed,
       status,
       dueDate,
@@ -134,6 +152,7 @@ const updateTask = async (req, res) => {
         $set: {
           title,
           details,
+          note,
           listID,
           completed,
           status,
@@ -156,10 +175,15 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
+    const userName = req?.user?.username;
+
+    let userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
     const id = req?.body?.id;
     if (!id) return res.sendStatus(400);
 
-    const response = await Task.deleteOne({ id }).exec();
+    const response = await Task.deleteOne({ id });
     return res.sendStatus(204);
   } catch (err) {
     return res.sendStatus(500);
