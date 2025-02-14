@@ -8,8 +8,9 @@ const taskSchema = new mongoose.Schema(
     listID: { type: String, required: false, default: "task_list" },
 
     title: { type: String, required: false, default: "" },
+    task: { type: String, required: false, default: "" },
     details: { type: String, required: false, default: "" },
-    note: { type: String, required: false, default: "" },
+    notes: { type: String, required: false, default: "" },
 
     priority: { type: String, required: false, default: "low" },
     priorityLevel: { type: Number, required: false, default: 1 },

@@ -82,34 +82,50 @@ const createTask = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const task = req?.body?.newTask;
-    if (!task?.id) return res.sendStatus(400);
+    const taskData = req?.body?.newTask;
+    if (!taskData?.id) return res.sendStatus(400);
 
     let {
       id,
       listID,
+
       title,
+      task,
       details,
-      note,
+      notes,
+
       sortIndex,
       priority,
       priorityLevel,
+      dueDate,
+
+      completed,
+      color,
+      link,
+      linkText,
     } = task;
 
     const newTask = new Task({
       id,
       userID,
       listID,
+
       title,
+      task,
       details,
-      note,
+      notes,
+
+      sortIndex,
       priority: priority ?? "low",
       priorityLevel: priorityLevel ?? 1,
-      sortIndex,
-      tags: [],
-      dueDate: new Date(),
+      dueDate,
       dueTime: "",
-      completed: false,
+      tags: [],
+
+      completed,
+      color,
+      link,
+      linkText,
     });
     const data = await newTask.save();
 
@@ -126,15 +142,18 @@ const updateTask = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
-    const task = req?.body?.task;
+    const taskData = req?.body?.task;
     if (!task?.id) return res.sendStatus(400);
 
     const {
       id,
       listID,
+
       title,
+      task,
       details,
-      note,
+      notes,
+
       completed,
       status,
       dueDate,
@@ -144,15 +163,16 @@ const updateTask = async (req, res) => {
       color,
       link,
       linkText,
-    } = task;
+    } = taskData;
 
     const data = await Task.updateOne(
-      { id },
+      { id, userID },
       {
         $set: {
           title,
+          task,
           details,
-          note,
+          notes,
           listID,
           completed,
           status,
