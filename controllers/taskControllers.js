@@ -19,6 +19,8 @@ const getTasks = async (req, res) => {
     const page = req?.query?.page ?? 1;
     const ipp = req?.query?.ipp ?? 10;
 
+    console.log(type);
+
     const filters = { userID };
     if (completed !== "true") {
       filters.completed = false;
@@ -103,9 +105,9 @@ const createTask = async (req, res) => {
       color,
       link,
       linkText,
-    } = task;
+    } = taskData;
 
-    const newTask = new Task({
+    const response = await Task.create({
       id,
       userID,
       listID,
@@ -127,10 +129,10 @@ const createTask = async (req, res) => {
       link,
       linkText,
     });
-    const data = await newTask.save();
 
     return res.status(200).json({ status: "success", message: "List created" });
-  } catch (err) {
+  } catch (error) {
+    console.log(error);
     return res.sendStatus(500);
   }
 };
@@ -143,7 +145,7 @@ const updateTask = async (req, res) => {
     if (!userID) return res.sendStatus(401);
 
     const taskData = req?.body?.task;
-    if (!task?.id) return res.sendStatus(400);
+    if (!taskData?.id) return res.sendStatus(400);
 
     const {
       id,
@@ -189,6 +191,7 @@ const updateTask = async (req, res) => {
 
     return res.sendStatus(204);
   } catch (error) {
+    console.log(error);
     return res.sendStatus(500);
   }
 };
