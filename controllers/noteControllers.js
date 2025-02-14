@@ -38,6 +38,7 @@ const createNote = async (req, res) => {
       tags: [],
       pinned: false,
       trash: false,
+      isOpen: true,
     });
 
     const data = await newNote.save();
@@ -51,8 +52,17 @@ const editNote = async (req, res) => {
   try {
     const newNote = req?.body?.newNote;
 
-    let { id, title, details, priority, tags, trash, sortIndex, pinned } =
-      newNote;
+    let {
+      id,
+      title,
+      details,
+      priority,
+      tags,
+      trash,
+      sortIndex,
+      pinned,
+      isOpen,
+    } = newNote;
 
     let data = await Note.updateOne(
       { id },
@@ -65,7 +75,7 @@ const editNote = async (req, res) => {
           trash,
           sortIndex,
           pinned,
-          updateDate: new Date(),
+          isOpen,
         },
       }
     );

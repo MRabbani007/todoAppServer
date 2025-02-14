@@ -18,8 +18,7 @@ const getTasks = async (req, res) => {
     const completed = req?.query?.comp ?? false;
     const page = req?.query?.page ?? 1;
     const ipp = req?.query?.ipp ?? 10;
-
-    console.log(type);
+    const search = req?.query?.search ?? null;
 
     const filters = { userID };
     if (completed !== "true") {
@@ -58,7 +57,18 @@ const getTasks = async (req, res) => {
         filters.listID = listID;
       }
     }
-
+    if (search?.trim()) {
+      filters.$or = [
+        { title: search },
+        { title: { $regex: search, $options: "i" } },
+        { task: search },
+        { task: { $regex: search, $options: "i" } },
+        { details: search },
+        { details: { $regex: search, $options: "i" } },
+      ];
+    }
+    console.log(search);
+    console.log(filters);
     const itemsPerPage = type === "PLANNER" ? 300 : ipp;
 
     data = await Task.find(filters)
