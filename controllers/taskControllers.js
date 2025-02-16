@@ -41,7 +41,6 @@ const getTasks = async (req, res) => {
       };
     }
     if (type === "OVERDUE") {
-      const day = getDate(1);
       const offset = getDate(-1);
       filters.dueDate = {
         $gte: new Date("2000-01-01"),
@@ -67,8 +66,7 @@ const getTasks = async (req, res) => {
         { details: { $regex: search, $options: "i" } },
       ];
     }
-    console.log(search);
-    console.log(filters);
+
     const itemsPerPage = type === "PLANNER" ? 300 : ipp;
 
     data = await Task.find(filters)
@@ -84,6 +82,103 @@ const getTasks = async (req, res) => {
     return res.status(200).json({ data, count });
   } catch (err) {
     res.sendStatus(500);
+  }
+};
+
+const getDashboardTasks = async (req, res) => {
+  try {
+    const userName = req?.user?.username;
+    if (!userName) return res.sendStatus(401);
+
+    const userID = await getUserID(userName);
+    if (!userID) return res.sendStatus(401);
+
+    const completed = req?.query?.completed;
+
+    const day = getDate();
+    const nextDay = getDate(1);
+    const weekOffset = getDate(7);
+    const previousDay = getDate(-1);
+
+    const today = new Date();
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+    const startOfWeek = new Date();
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const todayTasks = await Task.find({
+      userID,
+      dueDate: {
+        $gte: new Date(day),
+        $lte: new Date(day),
+      },
+      completed: false,
+      // dueDate: { $gte: startOfToday, $lte: endOfToday },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const weekTasks = await Task.find({
+      userID,
+      dueDate: {
+        $gte: new Date(nextDay),
+        $lte: new Date(weekOffset),
+      },
+      completed: false,
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const importantTasks = await Task.find({
+      userID,
+      priority: { $in: ["high", "important"] },
+      completed: false,
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const overdueTasks = await Task.find({
+      userID,
+      dueDate: {
+        $gte: new Date("2000-01-01"),
+        $lte: new Date(previousDay),
+      },
+      completed: false,
+    })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const totalFetched =
+      todayTasks.length +
+      weekTasks.length +
+      importantTasks.length +
+      overdueTasks.length;
+
+    let recentTasks = [];
+    if (totalFetched < 10) {
+      recentTasks = await Task.find({ userID })
+        .sort({ createdAt: -1 })
+        .limit(10);
+    }
+
+    return res.json([
+      {
+        todayTasks,
+        weekTasks,
+        importantTasks,
+        overdueTasks,
+        recentTasks,
+      },
+    ]);
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch dashboard tasks");
   }
 };
 
@@ -167,6 +262,7 @@ const updateTask = async (req, res) => {
       notes,
 
       completed,
+      completedAt,
       status,
       dueDate,
       priority,
@@ -187,6 +283,7 @@ const updateTask = async (req, res) => {
           notes,
           listID,
           completed,
+          completedAt: new Date(completedAt),
           status,
           dueDate: new Date(dueDate),
           priority,
@@ -460,6 +557,7 @@ const getTaskSummary = async (req, res) => {
 
 module.exports = {
   getTasks,
+  getDashboardTasks,
   createTask,
   updateTask,
   deleteTask,

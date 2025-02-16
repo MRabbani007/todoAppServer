@@ -11,6 +11,7 @@ const {
   getTaskSummary,
   sortTasks,
   sortTasksPlanner,
+  getDashboardTasks,
 } = require("../controllers/taskControllers");
 const taskRouter = express();
 
@@ -20,6 +21,8 @@ taskRouter
   .post(createTask)
   .patch(updateTask)
   .delete(deleteTask);
+
+taskRouter.route("/dashboard").get(getDashboardTasks);
 
 taskRouter.route("/sort").patch(sortTasks);
 taskRouter.route("/sortPlanner").patch(sortTasksPlanner);

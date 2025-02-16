@@ -34,6 +34,7 @@ const taskSchema = new mongoose.Schema(
 
     dueTime: { type: String, required: false },
     completed: { type: Boolean, required: false, default: false },
+    completedAt: { type: Date, required: false },
 
     status: { type: String, required: false, default: "open" },
     trash: { type: Boolean, required: false, default: false },

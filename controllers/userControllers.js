@@ -1,7 +1,8 @@
-const user = require("../db_schemas/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { ACTIONS } = require("../data/utils");
+const user = require("../db_schemas/user");
+const UserProfile = require("../db_schemas/userProfile");
 
 const handleSignUp = async (req, res) => {
   try {
@@ -296,98 +297,75 @@ const handleGetUsers = async (req, res) => {
 };
 
 // Get settings for user
-const handleUserGetSettings = async (req, res) => {
+const handleUserGetProfile = async (req, res) => {
   try {
-    const username = req?.body?.username;
+    const username = req?.user?.username;
 
-    const data = await user
-      .findOne(
-        { username: username },
-        { name: 1, email: 1, theme: 1, descriptions: 1 }
-      )
-      .exec();
-    if (data.length !== 0) {
-      return res.status(200).json(data);
-    } else {
-      return res.sendStatus(204);
+    let foundUser = await user.findOne(
+      {
+        username,
+      },
+      {
+        password: 0,
+        accessToken: 0,
+        refreshToken: 0,
+      }
+    );
+
+    if (!foundUser?.id) return res.sendStatus(401);
+
+    let userProfile = await UserProfile.findOne({ id: foundUser?.id });
+
+    if (!userProfile) {
+      userProfile = await UserProfile.create({ id: foundUser.id });
     }
+
+    return res.json({ userProfile });
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
-const handleUserEditSettings = async (req, res) => {
+const handleUserEditProfile = async (req, res) => {
   try {
-    const action = req?.body?.action;
-    const { type, payload } = action;
-    switch (type) {
-      case "EDIT_NAME": {
-        if (!payload?.name) {
-          return res
-            .status(200)
-            .json({ status: "failed", message: "name not found" });
-        } else {
-          const data = await user
-            .updateOne(
-              { username: payload?.username },
-              { $set: { name: payload?.name } }
-            )
-            .exec();
-          return res.status(200).json({ status: "success", message: "added" });
-        }
+    const username = req?.user?.username;
+    const profileData = req?.body?.profileData;
+
+    let userID = await getUserID(username);
+    if (!userID) return res.sendStatus(401);
+
+    const {
+      firstname,
+      lastname,
+      profileEmail,
+      bio,
+      profileImage,
+      phoneNumber,
+      city,
+      country,
+      careerTrade,
+    } = profileData;
+
+    const data = await UserProfile.updateOne(
+      { id: userID },
+      {
+        $set: {
+          firstname,
+          lastname,
+          profileEmail,
+          bio,
+          profileImage,
+          phoneNumber,
+          city,
+          country,
+          careerTrade,
+        },
       }
-      case "EDIT_EMAIL": {
-        if (!payload?.email) {
-          return res
-            .status(200)
-            .json({ status: "failed", message: "email not found" });
-        } else {
-          const data = await user
-            .updateOne(
-              { username: payload?.username },
-              { $set: { email: payload?.email } }
-            )
-            .exec();
-          return res.status(200).json({ status: "success", message: "added" });
-        }
-      }
-      case "EDIT_THEME": {
-        if (!payload?.theme) {
-          return res
-            .status(200)
-            .json({ status: "failed", message: "theme not found" });
-        } else {
-          const data = await user
-            .updateOne(
-              { username: payload?.username },
-              { $set: { theme: payload?.theme } }
-            )
-            .exec();
-          return res.status(200).json({ status: "success", message: "added" });
-        }
-      }
-      // TODO: add edit currency
-      case "EDIT_ROLES": {
-        if (!payload?.roles) {
-          return res
-            .status(200)
-            .json({ status: "failed", message: "roles not found" });
-        } else {
-          const data = await user
-            .updateOne(
-              { username: payload?.editUser },
-              { $set: { roles: payload?.roles } }
-            )
-            .exec();
-          return res.status(200).json({ status: "success", message: "added" });
-        }
-      }
-      default: {
-        res.sendStatus(204);
-      }
-    }
+    );
+
+    return res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 };
 
@@ -398,8 +376,8 @@ module.exports = {
   handleUserUpdate,
   handleRefreshToken,
   handleGetUsers,
-  handleUserGetSettings,
-  handleUserEditSettings,
+  handleUserGetProfile,
+  handleUserEditProfile,
   handleUserPassword,
   getUserID,
 };

@@ -6,9 +6,9 @@ const {
   handleSignOut,
   handleRefreshToken,
   handleGetUsers,
-  handleUserGetSettings,
-  handleUserEditSettings,
   handleUserPassword,
+  handleUserGetProfile,
+  handleUserEditProfile,
 } = require("../controllers/userControllers");
 const User = require("../db_schemas/user");
 const verifyJWT = require("../middleware/verifyJWT");
@@ -30,9 +30,9 @@ userRouter.use(verifyJWT);
 userRouter.route("/admin").get(verifyRoles(5150), handleGetUsers);
 
 userRouter
-  .route("/settings")
-  .post(verifyRoles(2001), handleUserGetSettings)
-  .put(verifyRoles(2001), handleUserEditSettings);
+  .route("/profile")
+  .get(verifyRoles(2001), handleUserGetProfile)
+  .patch(verifyRoles(2001), handleUserEditProfile);
 
 userRouter.route("/pwd").post(verifyRoles(2001), handleUserPassword);
 
