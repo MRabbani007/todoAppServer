@@ -25,6 +25,7 @@ const {
   createJournal,
   updateJournal,
   deleteJournal,
+  getJournalTitles,
 } = require("../controllers/journalControllers");
 const {
   getNotes,
@@ -59,6 +60,8 @@ router
   .post(createJournal)
   .patch(updateJournal)
   .delete(deleteJournal);
+
+router.route("/journal/categories").get(getJournalTitles);
 
 router
   .route("/activity")

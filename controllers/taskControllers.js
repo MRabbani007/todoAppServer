@@ -177,8 +177,7 @@ const getDashboardTasks = async (req, res) => {
       },
     ]);
   } catch (error) {
-    console.error(error);
-    throw new Error("Failed to fetch dashboard tasks");
+    return res.sendStatus(500);
   }
 };
 
@@ -437,6 +436,11 @@ const getListSummary = async (req, res) => {
     let userID = await getUserID(userName);
     if (!userID) return res.sendStatus(401);
 
+    const day = getDate();
+    const nextDay = getDate(1);
+    const weekOffset = getDate(7);
+    const previousDay = getDate(-1);
+
     let data = await Task.aggregate([
       {
         $match: { userID: userID },
@@ -451,12 +455,61 @@ const getListSummary = async (req, res) => {
           pending: {
             $sum: { $cond: [{ $eq: ["$completed", false] }, 1, 0] },
           },
+          overdue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date("2000-01-01")] },
+                    { $lte: ["$dueDate", new Date(previousDay)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          highPriority: {
+            $sum: { $cond: [{ $gte: ["$priorityLevel", 4] }, 1, 0] },
+          },
+          todayTasks: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date(day)] },
+                    { $lte: ["$dueDate", new Date(day)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          thisWeek: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$dueDate", new Date(nextDay)] },
+                    { $lte: ["$dueDate", new Date(weekOffset)] },
+                    { $eq: ["$completed", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
         },
       },
     ]);
 
     return res.json(data);
   } catch (error) {
+    console.log(error);
     return res.sendStatus(500);
   }
 };
@@ -537,7 +590,7 @@ const getTaskSummary = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $eq: ["$priority", "high"] },
+                    { $gte: ["$priorityLevel", 4] },
                     { $eq: ["$completed", false] },
                   ],
                 },
