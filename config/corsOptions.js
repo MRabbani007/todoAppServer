@@ -8,10 +8,11 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  // allowedOrigins: allowedOrigins,
   optionsSuccessStatus: 200,
   methods: ["GET", "HEAD", "PATCH", "POST", "DELETE", "OPTIONS"],
-  credentials: true,
+  origin: ["https://mrabbani007.github.io", "http://localhost:5173"], // Allow only frontend
+  credentials: true, // Allow cookies/sessions
+  allowedHeaders: ["Content-Type", "Authorization"],
   // preflightContinue: false,
   // keepHeaderOnError: true,
   // headers: ["Content-Type", "Authorization", "Origin", "Accept"],
