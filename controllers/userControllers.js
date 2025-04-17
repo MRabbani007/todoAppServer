@@ -7,46 +7,50 @@ const UserProfile = require("../db_schemas/userProfile");
 const handleSignUp = async (req, res) => {
   try {
     // get username and password from client
-    let { username, password } = req.body.payload;
+    let username = req.body.username;
+    let password = req.body.password;
+
     if (!username || !password) {
-      res.status(400).json({ message: "Username and Password are required" });
-    } else {
-      const duplicate = await user.findOne({ username: username }).exec();
-      // check if already registered
-      if (duplicate) {
-        res.status(409).json({
-          status: "failed",
-          messsage: "username already registered",
-        });
-      } else {
-        // if username not in db register new user
-
-        // encrypt password
-        const hashedPwd = await bcrypt.hash(password, 10);
-
-        // save user to DB
-        const result = await user.create({
-          id: crypto.randomUUID(),
-          username: username,
-          password: hashedPwd,
-          name: "",
-          email: "",
-          roles: 2001,
-          createDate: new Date(),
-          active: false,
-          lastSigin: new Date("1900-01-01"),
-          refreshToken: "",
-          accessToken: "",
-        });
-
-        res.status(201).json({
-          status: "success",
-          message: "user registered",
-        });
-      }
+      return res
+        .status(400)
+        .json({ message: "Username and Password are required" });
     }
+
+    const duplicate = await user.findOne({ username: username }).exec();
+    // check if already registered
+
+    if (duplicate) {
+      return res.status(409).json({
+        status: "failed",
+        messsage: "username already registered",
+      });
+    }
+
+    // encrypt password
+    const hashedPwd = await bcrypt.hash(password, 10);
+
+    // save user to DB
+    const result = await user.create({
+      id: crypto.randomUUID(),
+      username: username,
+      password: hashedPwd,
+      name: "",
+      email: "",
+      roles: 2001,
+      createDate: new Date(),
+      active: false,
+      lastSigin: new Date("1900-01-01"),
+      refreshToken: "",
+      accessToken: "",
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "user registered",
+    });
   } catch (error) {
-    res.status(500).json({ status: "error", message: "Signup error" });
+    console.log(error);
+    return res.status(500).json({ status: "error", message: "Signup error" });
   }
 };
 
